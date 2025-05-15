@@ -436,3 +436,52 @@ footer {
     border-color: #17a2b8;
     color: #0c5460;
 }
+
+/* Стили для индикатора статуса API */
+.api-status-wrapper {
+    font-size: 0.85rem;
+    margin-top: 5px;
+    text-align: right;
+}
+
+.api-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.api-status:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.api-status i {
+    margin-right: 5px;
+    font-size: 1rem;
+}
+
+.api-status.connected {
+    color: var(--success-color);
+    border-left: 3px solid var(--success-color);
+}
+
+.api-status.error,
+.api-status.timeout {
+    color: var(--danger-color);
+    border-left: 3px solid var(--danger-color);
+}
+
+.api-status.checking {
+    color: var(--warning-color);
+    border-left: 3px solid var(--warning-color);
+}
+
+.api-status.unknown {
+    color: var(--secondary-color);
+    border-left: 3px solid var(--secondary-color);
+}

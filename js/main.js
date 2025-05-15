@@ -21,6 +21,9 @@ function initApp() {
     // Инициализация навигации
     initNavigation();
     
+    // Инициализация индикатора статуса API
+    initApiStatusIndicator();
+    
     // Загрузка данных в зависимости от текущей страницы
     loadPageData();
 }
@@ -36,12 +39,12 @@ async function checkAuthStatus() {
         
         // Проверяем, авторизован ли пользователь
         if (AuthAPI.isAuthenticated()) {
-            const user = await AuthAPI.getCurrentUser();
+            const user = AuthAPI.getCurrentUser();
             if (user) {
                 updateUIForAuthenticatedUser(user);
             } else {
                 // Если не удалось получить данные пользователя, выходим из системы
-                AuthAPI.removeToken();
+                AuthAPI.logout();
                 updateUIForAnonymousUser();
             }
         } else {
@@ -55,32 +58,27 @@ async function checkAuthStatus() {
 
 // Обновление UI для авторизованного пользователя
 function updateUIForAuthenticatedUser(user) {
-    // Находим элементы навигации для профиля
-    const profileLinks = document.querySelectorAll('.nav-profile');
-    const authLinks = document.querySelectorAll('.nav-auth');
+    // Находим элементы профиля и авторизации
+    const profileNavItems = document.querySelectorAll('.nav-profile');
+    const authNavItems = document.querySelectorAll('.auth-nav');
     
-    // Показываем ссылки профиля
-    profileLinks.forEach(link => {
-        link.style.display = 'block';
-        
-        // Если есть иконка профиля с инициалами пользователя
-        const profileIcon = link.querySelector('.profile-icon');
-        if (profileIcon) {
-            const initials = getInitials(user.firstName, user.lastName);
-            profileIcon.textContent = initials;
-        }
-        
-        // Если есть имя пользователя
-        const profileName = link.querySelector('.profile-name');
-        if (profileName && user.firstName) {
-            profileName.textContent = user.firstName;
-        }
+    // Показываем элементы профиля
+    profileNavItems.forEach(item => {
+        item.style.display = 'list-item';
     });
     
-    // Скрываем ссылки на авторизацию/регистрацию
-    authLinks.forEach(link => {
-        link.style.display = 'none';
+    // Скрываем элементы авторизации
+    authNavItems.forEach(item => {
+        item.style.display = 'none';
     });
+    
+    // Если нужно показать информацию о пользователе в UI
+    const userNameElements = document.querySelectorAll('.user-name');
+    if (userNameElements.length > 0 && user.firstName) {
+        userNameElements.forEach(el => {
+            el.textContent = user.firstName;
+        });
+    }
     
     // Сохраняем данные пользователя в localStorage для быстрого доступа
     localStorage.setItem('searhJob_userData', JSON.stringify({
@@ -93,18 +91,18 @@ function updateUIForAuthenticatedUser(user) {
 
 // Обновление UI для неавторизованного пользователя
 function updateUIForAnonymousUser() {
-    // Находим элементы навигации для профиля
-    const profileLinks = document.querySelectorAll('.nav-profile');
-    const authLinks = document.querySelectorAll('.nav-auth');
+    // Находим элементы профиля и авторизации
+    const profileNavItems = document.querySelectorAll('.nav-profile');
+    const authNavItems = document.querySelectorAll('.auth-nav');
     
-    // Скрываем ссылки профиля
-    profileLinks.forEach(link => {
-        link.style.display = 'none';
+    // Скрываем элементы профиля
+    profileNavItems.forEach(item => {
+        item.style.display = 'none';
     });
     
-    // Показываем ссылки на авторизацию/регистрацию
-    authLinks.forEach(link => {
-        link.style.display = 'block';
+    // Показываем элементы авторизации
+    authNavItems.forEach(item => {
+        item.style.display = 'list-item';
     });
     
     // Удаляем данные пользователя из localStorage
@@ -575,6 +573,54 @@ async function toggleFavoriteJob(jobId, button) {
     } catch (error) {
         console.error('Error toggling favorite status:', error);
         showMessage('error', 'Ошибка при изменении статуса избранного');
+    }
+}
+
+// Функция для инициализации индикатора статуса API
+function initApiStatusIndicator() {
+    // Проверяем, доступен ли объект ApiStatus
+    if (typeof ApiStatus === 'undefined') {
+        console.warn('ApiStatus не определен. Пропускаем инициализацию индикатора статуса API.');
+        return;
+    }
+    
+    // Находим контейнер для индикатора статуса API
+    const container = document.getElementById('api-status-container');
+    if (container) {
+        // Внедряем индикатор статуса
+        ApiStatus.injectStatusIndicator('api-status-container');
+        
+        // Запрашиваем разрешение на уведомления
+        ApiStatus.requestNotificationPermission();
+        
+        // Запускаем автоматическую проверку статуса API (каждую минуту)
+        ApiStatus.startAutoCheck(60000);
+    } else {
+        console.warn('Контейнер для индикатора статуса API не найден.');
+    }
+    
+    // Подписываемся на изменения статуса API
+    ApiStatus.subscribeToStatusChanges(handleApiStatusChange);
+}
+
+// Обработчик изменений статуса API
+function handleApiStatusChange(event) {
+    console.log('Статус API изменился:', event);
+    
+    // Обработка различных изменений статуса
+    if (event.oldStatus !== ApiStatus.connectionStatus.CONNECTED && 
+        event.newStatus === ApiStatus.connectionStatus.CONNECTED) {
+        // API только что стал доступен - можно выполнить дополнительные действия, например:
+        console.log('API стал доступен, обновляем данные...');
+        loadPageData(); // Обновляем данные на странице
+    }
+    
+    // Если API перестал быть доступным
+    if (event.oldStatus === ApiStatus.connectionStatus.CONNECTED && 
+        event.newStatus !== ApiStatus.connectionStatus.CONNECTED && 
+        event.newStatus !== ApiStatus.connectionStatus.CHECKING) {
+        console.warn('API стал недоступен');
+        // Можно показать сообщение пользователю или предпринять другие действия
     }
 }
 

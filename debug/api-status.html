@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Проверка статуса API</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <title>Проверка статуса API - SearhJob</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         .status-grid {
             display: grid;
@@ -14,10 +15,11 @@
         }
         
         .status-card {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 15px;
-            background-color: #f9f9f9;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
         }
         
         .status-indicator {
@@ -83,9 +85,11 @@
         }
     </style>
 </head>
-<body>
-    <div class="container">
+<body>    <div class="container">
         <h1>Проверка статуса API</h1>
+        <div id="api-status-container" class="api-status-wrapper">
+            <!-- Сюда будет внедрен индикатор статуса API -->
+        </div>
         
         <div class="card">
             <h2>Настройки проверки</h2>
@@ -123,19 +127,41 @@
                 <p>Загрузка данных о статусе API...</p>
             </div>
         </div>
-        
-        <footer>
-            <p>SearhJob API статус &copy; 2025</p>
-            <p><a href="../index.html">Вернуться на главную</a></p>
+          <footer>
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-section">
+                        <h3>О SearhJob</h3>
+                        <p>Платформа для поиска работы, объединяющая соискателей и работодателей.</p>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h3>Инструменты</h3>
+                        <ul>
+                            <li><a href="index.html">Меню инструментов</a></li>
+                            <li><a href="api-status.html">Статус API</a></li>
+                            <li><a href="api-health.html">Здоровье API</a></li>
+                            <li><a href="api-tester.html">Тестер API</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="footer-bottom">
+                    <p>&copy; 2025 SearhJob. Все права защищены.</p>
+                </div>
+            </div>
         </footer>
     </div>
-    
+      <script src="../js/api-config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/api-status.js"></script>
     <script>
         // Базовый URL API
         const baseApiUrl = 'http://89.35.130.223:25063';
         
         // Список эндпоинтов для проверки
         const endpoints = [
+            { name: 'Пинг API', url: `${baseApiUrl}/ping`, method: 'GET' },
             { name: 'API Сервер', url: `${baseApiUrl}/`, method: 'GET' },
             { name: 'Список вакансий', url: `${baseApiUrl}/jobs`, method: 'GET' },
             { name: 'Вакансия по ID', url: `${baseApiUrl}/jobs/1`, method: 'GET' },
@@ -148,6 +174,9 @@
         // Функция для получения URL с прокси
         function getProxyUrl(targetUrl) {
             const proxyService = document.getElementById('proxyService').value;
+            
+            // Сохраняем выбранный прокси для использования в других частях приложения
+            localStorage.setItem('searhJob_corsProxy', proxyService);
             
             switch (proxyService) {
                 case 'corsproxy':
@@ -279,12 +308,58 @@
                 statusSummary.innerHTML += `<p style="color: #F44336; font-weight: bold;">❌ API недоступно или имеет серьезные проблемы</p>`;
             }
         }
+          // Обработчик кнопки обновления
+        document.getElementById('refreshStatus').addEventListener('click', () => {
+            updateAllStatuses();
+            // Также принудительно обновляем статус API через глобальный объект ApiStatus
+            if (window.ApiStatus) {
+                ApiStatus.checkApiStatus(true);
+            }
+        });
         
-        // Обработчик кнопки обновления
-        document.getElementById('refreshStatus').addEventListener('click', updateAllStatuses);
-        
-        // Первоначальная проверка статусов
-        document.addEventListener('DOMContentLoaded', updateAllStatuses);
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            // Загружаем сохраненный выбор прокси
+            const savedProxy = localStorage.getItem('searhJob_corsProxy');
+            if (savedProxy) {
+                document.getElementById('proxyService').value = savedProxy;
+            }
+            
+            // Добавляем индикатор статуса API
+            const header = document.querySelector('h1');
+            if (header && window.ApiStatus) {
+                const statusContainer = document.createElement('div');
+                statusContainer.id = 'api-status-container';
+                statusContainer.style.marginBottom = '20px';
+                header.after(statusContainer);
+                
+                // Внедряем индикатор статуса
+                ApiStatus.injectStatusIndicator('api-status-container');
+            }
+            
+            // Обновляем статус эндпоинтов
+            updateAllStatuses();
+            
+            // Подписываемся на изменения статуса API
+            if (window.ApiStatus) {
+                ApiStatus.subscribeToStatusChanges((event) => {
+                    console.log('API status changed:', event);
+                    updateAllStatuses(); // Обновляем статусы эндпоинтов при изменении статуса API
+                });
+                
+                // Запускаем автоматическую проверку каждые 60 секунд
+                ApiStatus.startAutoCheck(60000);
+            }
+            
+            // Обработчик изменения прокси
+            document.getElementById('proxyService').addEventListener('change', () => {
+                // Обновим глобальный API статус при изменении прокси
+                if (window.ApiStatus) {
+                    ApiStatus.checkApiStatus(true);
+                }
+                updateAllStatuses();
+            });
+        });
     </script>
 </body>
 </html>

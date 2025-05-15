@@ -16,12 +16,21 @@
                     <ul>
                         <li><a href="index.html">Главная</a></li>
                         <li><a href="jobs.html">Вакансии</a></li>
-                        <li><a href="companies.html">Компании</a></li>
-                        <li><a href="about.html" class="active">О нас</a></li>
+                        <li><a href="companies.html">Компании</a></li>                        <li><a href="about.html" class="active">О нас</a></li>
                         <li><a href="contact.html">Контакты</a></li>
-                        <li><a href="profile.html"><i class="fas fa-user"></i> Профиль</a></li>
+                        <li class="nav-profile" style="display:none;">
+                            <a href="profile.html"><i class="fas fa-user"></i> Профиль</a>
+                        </li>
+                        <li class="auth-nav">
+                            <a href="register.html" class="btn btn-outline">Регистрация</a>
+                            <a href="login.html" class="btn primary">Вход</a>
+                        </li>
                     </ul>
                 </nav>
+            </div>
+            <!-- Индикатор статуса API -->
+            <div id="api-status-container" class="api-status-wrapper">
+                <!-- Сюда будет внедрен индикатор статуса API -->
             </div>
         </div>
     </header>
@@ -205,5 +214,7 @@
 
     <script src="js/api.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/api-config.js"></script>
+    <script src="js/api-status.js"></script>
 </body>
 </html>

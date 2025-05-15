@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация - SearhJob</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">Searh<span>Job</span></a>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Главная</a></li>
+                        <li><a href="jobs.html">Вакансии</a></li>
+                        <li><a href="companies.html">Компании</a></li>
+                        <li><a href="about.html">О нас</a></li>
+                        <li><a href="contact.html">Контакты</a></li>
+                        <li class="auth-nav">
+                            <a href="register.html" class="btn btn-outline">Регистрация</a>
+                            <a href="login.html" class="btn primary active">Вход</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <!-- Индикатор статуса API -->
+            <div id="api-status-container" class="api-status-wrapper">
+                <!-- Сюда будет внедрен индикатор статуса API -->
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="auth-section">
+            <div class="container">
+                <div class="auth-container">
+                    <h1 class="auth-title">Вход в систему</h1>
+                    <div class="auth-form-container">
+                        <form id="login-form" class="auth-form">
+                            <div class="form-group">
+                                <label for="login-email">Email</label>
+                                <input type="email" id="login-email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="login-password">Пароль</label>
+                                <div class="password-input-container">
+                                    <input type="password" id="login-password" name="password" required>
+                                    <button type="button" class="toggle-password" aria-label="Показать/скрыть пароль">
+                                        <i class="far fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group remember-forgot">
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="remember-me" name="remember">
+                                    <label for="remember-me">Запомнить меня</label>
+                                </div>
+                                <a href="#" class="forgot-password-link">Забыли пароль?</a>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn primary full-width">Войти</button>
+                            </div>
+                            <div class="auth-message" id="login-message"></div>
+                        </form>
+                    </div>
+                    <div class="auth-links">
+                        <p>Еще нет аккаунта? <a href="register.html">Зарегистрироваться</a></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <a href="index.html" class="logo">Searh<span>Job</span></a>
+                    <p>Ваш помощник в поиске идеальной работы</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Навигация</h4>
+                    <ul>
+                        <li><a href="index.html">Главная</a></li>
+                        <li><a href="jobs.html">Вакансии</a></li>
+                        <li><a href="companies.html">Компании</a></li>
+                        <li><a href="about.html">О нас</a></li>
+                        <li><a href="contact.html">Контакты</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>Контакты</h4>
+                    <p><i class="fas fa-envelope"></i> info@searhjob.com</p>
+                    <p><i class="fas fa-phone"></i> +380 (XXX) XXX-XX-XX</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 SearhJob. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/api-config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/api-status.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Функция для переключения видимости пароля
+            document.querySelector('.toggle-password')?.addEventListener('click', function() {
+                const passwordInput = document.getElementById('login-password');
+                const icon = this.querySelector('i');
+                
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.classList.replace('fa-eye', 'fa-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    icon.classList.replace('fa-eye-slash', 'fa-eye');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

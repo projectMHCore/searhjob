@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация - SearhJob</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">Searh<span>Job</span></a>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Главная</a></li>
+                        <li><a href="jobs.html">Вакансии</a></li>
+                        <li><a href="companies.html">Компании</a></li>
+                        <li><a href="about.html">О нас</a></li>
+                        <li><a href="contact.html">Контакты</a></li>
+                        <li class="auth-nav">
+                            <a href="register.html" class="btn primary active">Регистрация</a>
+                            <a href="login.html" class="btn btn-outline">Вход</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <!-- Индикатор статуса API -->
+            <div id="api-status-container" class="api-status-wrapper">
+                <!-- Сюда будет внедрен индикатор статуса API -->
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="auth-section">
+            <div class="container">
+                <div class="auth-container">
+                    <div class="auth-form-container">
+                        <h2>Создание аккаунта</h2>
+                        <div class="user-type-toggle">
+                            <button class="active" data-type="seeker">Соискатель</button>
+                            <button data-type="employer">Работодатель</button>
+                        </div>
+                        
+                        <form id="register-form" class="auth-form">
+                            <input type="hidden" id="user-type" name="userType" value="seeker">
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="register-firstName">Имя</label>
+                                    <input type="text" id="register-firstName" name="firstName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="register-lastName">Фамилия</label>
+                                    <input type="text" id="register-lastName" name="lastName" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="register-email">Email</label>
+                                <input type="email" id="register-email" name="email" required>
+                            </div>
+                            
+                            <div class="form-group company-field" style="display:none;">
+                                <label for="register-company">Название компании</label>
+                                <input type="text" id="register-company" name="companyName">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="register-password">Пароль</label>
+                                <div class="password-input-container">
+                                    <input type="password" id="register-password" name="password" required>
+                                    <span class="toggle-password">
+                                        <i class="fas fa-eye"></i>
+                                    </span>
+                                </div>
+                                <div class="password-strength-meter">
+                                    <div class="strength-bar">
+                                        <div class="strength-indicator" style="width: 0;"></div>
+                                    </div>
+                                    <div class="strength-text"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="register-confirmPassword">Подтвердите пароль</label>
+                                <div class="password-input-container">
+                                    <input type="password" id="register-confirmPassword" name="confirmPassword" required>
+                                    <span class="toggle-password">
+                                        <i class="fas fa-eye"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <div class="terms-agree">
+                                    <input type="checkbox" id="terms-agree" name="termsAgree" required>
+                                    <label for="terms-agree">Я согласен с <a href="#">Условиями использования</a> и <a href="#">Политикой конфиденциальности</a></label>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn primary btn-block">Создать аккаунт</button>
+                            
+                            <div id="register-message" class="auth-message"></div>
+                        </form>
+                        
+                        <div class="social-login">
+                            <p>Или зарегистрируйтесь через</p>
+                            <div class="social-buttons">
+                                <button class="btn social google">
+                                    <i class="fab fa-google"></i> Google
+                                </button>
+                                <button class="btn social facebook">
+                                    <i class="fab fa-facebook-f"></i> Facebook
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="auth-footer">
+                            <p>Уже есть аккаунт? <a href="login.html">Войти</a></p>
+                        </div>
+                    </div>
+                    
+                    <div class="auth-info">
+                        <h2>Присоединяйтесь к SearhJob!</h2>
+                        <p>Создайте аккаунт и откройте для себя новые возможности для карьерного роста.</p>
+                        <ul>
+                            <li><i class="fas fa-check-circle"></i> Доступ к тысячам вакансий</li>
+                            <li><i class="fas fa-check-circle"></i> Создание и управление резюме</li>
+                            <li><i class="fas fa-check-circle"></i> Получение предложений от работодателей</li>
+                            <li><i class="fas fa-check-circle"></i> Удобный поиск и фильтрация вакансий</li>
+                        </ul>
+                        <div class="employer-info" style="display:none;">
+                            <h3>Для работодателей</h3>
+                            <ul>
+                                <li><i class="fas fa-check-circle"></i> Размещение неограниченного числа вакансий</li>
+                                <li><i class="fas fa-check-circle"></i> Доступ к базе резюме соискателей</li>
+                                <li><i class="fas fa-check-circle"></i> Инструменты для управления кандидатами</li>
+                                <li><i class="fas fa-check-circle"></i> Аналитика эффективности вакансий</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <a href="index.html" class="logo">Searh<span>Job</span></a>
+                    <p>Ваш помощник в поиске идеальной работы</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Навигация</h4>
+                    <ul>
+                        <li><a href="index.html">Главная</a></li>
+                        <li><a href="jobs.html">Вакансии</a></li>
+                        <li><a href="companies.html">Компании</a></li>
+                        <li><a href="about.html">О нас</a></li>
+                        <li><a href="contact.html">Контакты</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>Контакты</h4>
+                    <p><i class="fas fa-envelope"></i> info@searhjob.com</p>
+                    <p><i class="fas fa-phone"></i> +380 (XXX) XXX-XX-XX</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 SearhJob. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/api-config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/api-status.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Переключение типа пользователя (соискатель/работодатель)
+            const userTypeButtons = document.querySelectorAll('.user-type-toggle button');
+            const userTypeInput = document.getElementById('user-type');
+            const companyField = document.querySelector('.company-field');
+            const employerInfo = document.querySelector('.employer-info');
+            
+            if (userTypeButtons.length > 0) {
+                userTypeButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        userTypeButtons.forEach(btn => btn.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        const userType = this.dataset.type;
+                        userTypeInput.value = userType;
+                        
+                        if (userType === 'employer') {
+                            companyField.style.display = 'block';
+                            employerInfo.style.display = 'block';
+                        } else {
+                            companyField.style.display = 'none';
+                            employerInfo.style.display = 'none';
+                        }
+                    });
+                });
+            }
+            
+            // Функции для переключения видимости паролей
+            document.querySelectorAll('.toggle-password').forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    const passwordInput = this.parentElement.querySelector('input');
+                    const icon = this.querySelector('i');
+                    
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        icon.classList.replace('fa-eye', 'fa-eye-slash');
+                    } else {
+                        passwordInput.type = 'password';
+                        icon.classList.replace('fa-eye-slash', 'fa-eye');
+                    }
+                });
+            });
+            
+            // Проверка надежности пароля
+            const passwordInput = document.getElementById('register-password');
+            const strengthBar = document.querySelector('.strength-indicator');
+            const strengthText = document.querySelector('.strength-text');
+            
+            if (passwordInput) {
+                passwordInput.addEventListener('input', function() {
+                    const password = this.value;
+                    let strength = 0;
+                    let feedback = '';
+                    
+                    if (password.length > 0) {
+                        // Простая проверка на надежность (можно расширить)
+                        if (password.length >= 8) strength += 20;
+                        if (password.match(/[a-z]+/)) strength += 20;
+                        if (password.match(/[A-Z]+/)) strength += 20;
+                        if (password.match(/[0-9]+/)) strength += 20;
+                        if (password.match(/[^a-zA-Z0-9]+/)) strength += 20;
+                        
+                        // Обновление индикатора и текста
+                        strengthBar.style.width = strength + '%';
+                        
+                        if (strength < 40) {
+                            strengthBar.style.backgroundColor = '#ff4d4d';
+                            feedback = 'Слабый пароль';
+                        } else if (strength < 80) {
+                            strengthBar.style.backgroundColor = '#ffd633';
+                            feedback = 'Средний пароль';
+                        } else {
+                            strengthBar.style.backgroundColor = '#47d147';
+                            feedback = 'Надежный пароль';
+                        }
+                        
+                        strengthText.textContent = feedback;
+                    } else {
+                        strengthBar.style.width = '0';
+                        strengthText.textContent = '';
+                    }
+                });
+            }
+            
+            // Проверка совпадения паролей
+            const confirmPasswordInput = document.getElementById('register-confirmPassword');
+            if (confirmPasswordInput) {
+                confirmPasswordInput.addEventListener('input', function() {
+                    const password = document.getElementById('register-password').value;
+                    const confirmPassword = this.value;
+                    
+                    if (password !== confirmPassword && confirmPassword.length > 0) {
+                        this.setCustomValidity('Пароли не совпадают');
+                    } else {
+                        this.setCustomValidity('');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

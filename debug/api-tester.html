@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>API Тестер с использованием CORS прокси</title>
+    <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/style.css">
     <style>
         .api-form {
@@ -120,6 +121,30 @@
     </style>
 </head>
 <body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="../index.html" class="logo">Searh<span>Job</span></a>
+                <nav>
+                    <ul>
+                        <li><a href="../index.html">Главная</a></li>
+                        <li><a href="../jobs.html">Вакансии</a></li>
+                        <li><a href="../companies.html">Компании</a></li>
+                        <li><a href="../about.html">О нас</a></li>
+                        <li><a href="../contact.html">Контакты</a></li>
+                        <li class="debug-menu active">
+                            <a href="index.html"><i class="fas fa-tools"></i> Отладка</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <!-- Индикатор статуса API -->
+            <div id="api-status-container" class="api-status-wrapper">
+                <!-- Сюда будет внедрен индикатор статуса API -->
+            </div>
+        </div>
+    </header>
+    
     <div class="container">
         <h1>API Тестер с использованием CORS прокси</h1>
         
@@ -477,7 +502,44 @@ GET http://89.35.130.223:25063/companies</textarea>
             } catch (error) {
                 resultsDiv.innerHTML = `<p><span class="status-indicator status-error"></span> Ошибка при выполнении пакетных запросов: ${error.message}</p>`;
             }
+        });    
+        // Инициализация индикатора статуса API
+        document.addEventListener('DOMContentLoaded', function() {
+            // Добавляем индикатор статуса API
+            if (window.ApiStatus) {
+                ApiStatus.injectStatusIndicator('api-status-container');
+                
+                // Загружаем сохраненный выбор прокси
+                const savedProxy = localStorage.getItem('searhJob_corsProxy');
+                if (savedProxy && document.getElementById('proxyService')) {
+                    document.getElementById('proxyService').value = savedProxy;
+                }
+                
+                // Подписываемся на изменения статуса API
+                ApiStatus.subscribeToStatusChanges((event) => {
+                    console.log('API Status изменился:', event);
+                });
+                
+                // Запускаем автоматическую проверку каждую минуту
+                ApiStatus.startAutoCheck(60000);
+            }
+        });
+        
+        // Обработчик изменения прокси
+        document.getElementById('proxyService').addEventListener('change', () => {
+            // Сохраняем выбор прокси в локальное хранилище
+            const proxyService = document.getElementById('proxyService').value;
+            localStorage.setItem('searhJob_corsProxy', proxyService);
+            
+            // Обновляем статус API
+            if (window.ApiStatus) {
+                ApiStatus.checkApiStatus(true);
+            }
         });
     </script>
+    
+    <script src="../js/api-config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/api-status.js"></script>
 </body>
 </html>

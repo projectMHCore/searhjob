@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой профиль - SearhJob</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">Searh<span>Job</span></a>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Главная</a></li>
+                        <li><a href="jobs.html">Вакансии</a></li>
+                        <li><a href="companies.html">Компании</a></li>
+                        <li><a href="about.html">О нас</a></li>
+                        <li><a href="contact.html">Контакты</a></li>
+                        <li class="nav-profile active">
+                            <a href="profile.html"><i class="fas fa-user"></i> Профиль</a>
+                        </li>
+                        <li class="auth-nav" style="display:none;">
+                            <a href="register.html" class="btn btn-outline">Регистрация</a>
+                            <a href="login.html" class="btn primary">Вход</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <!-- Индикатор статуса API -->
+            <div id="api-status-container" class="api-status-wrapper">
+                <!-- Сюда будет внедрен индикатор статуса API -->
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>Мой профиль</h1>
+                <p>Управляйте своими данными и настройками</p>
+            </div>
+        </section>
+
+        <section class="profile-section">
+            <div class="container">
+                <!-- Сообщение для незарегистрированных пользователей -->
+                <div id="unauthenticated-message" class="auth-message-container" style="display:none;">
+                    <div class="auth-message-content">
+                        <h2>Для доступа к профилю необходимо войти</h2>
+                        <p>Пожалуйста, войдите в свою учетную запись или зарегистрируйтесь, если у вас еще нет аккаунта.</p>
+                        <div class="btn-group">
+                            <a href="login.html" class="btn primary">Войти</a>
+                            <a href="register.html" class="btn btn-outline">Зарегистрироваться</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="profile-content" class="profile-content">
+                    <div class="profile-sidebar">
+                        <div class="profile-user-info">
+                            <div class="profile-avatar">
+                                <span id="profile-avatar-initials">ПП</span>
+                            </div>
+                            <h2 id="profile-name">Имя пользователя</h2>
+                            <p id="profile-email">user@example.com</p>
+                        </div>
+                        <ul class="profile-menu">
+                            <li class="active"><a href="#personal-info"><i class="fas fa-user-circle"></i> Личная информация</a></li>
+                            <li><a href="#resume"><i class="fas fa-file-alt"></i> Резюме</a></li>
+                            <li><a href="#applications"><i class="fas fa-briefcase"></i> Отклики на вакансии</a></li>
+                            <li><a href="#saved-jobs"><i class="fas fa-bookmark"></i> Избранные вакансии</a></li>
+                            <li><a href="#settings"><i class="fas fa-cog"></i> Настройки</a></li>
+                        </ul>
+                        <div class="profile-actions">
+                            <button id="logout-btn" class="btn btn-outline btn-block">
+                                <i class="fas fa-sign-out-alt"></i> Выйти
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="profile-main">
+                        <!-- Личная информация -->
+                        <div id="personal-info" class="profile-tab active">
+                            <h2>Личная информация</h2>
+                            
+                            <form id="personal-info-form" class="profile-form">
+                                <div class="form-group">
+                                    <label for="first-name">Имя</label>
+                                    <input type="text" id="first-name" name="firstName">
+                                </div>
+                                <div class="form-group">
+                                    <label for="last-name">Фамилия</label>
+                                    <input type="text" id="last-name" name="lastName">
+                                </div>
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input type="email" id="email" name="email" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label for="phone">Телефон</label>
+                                    <input type="tel" id="phone" name="phone" placeholder="+380XXXXXXXXX">
+                                </div>
+                                <div class="form-group">
+                                    <label for="location">Город</label>
+                                    <input type="text" id="location" name="location" placeholder="Например, Харьков">
+                                </div>
+                                <div class="form-group">
+                                    <button type="submit" class="btn primary">Сохранить изменения</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Резюме -->
+                        <div id="resume" class="profile-tab">
+                            <h2>Резюме</h2>
+                            <p class="tab-description">Создайте резюме, которое поможет вам найти работу мечты.</p>
+                            
+                            <div class="profile-no-data">
+                                <div class="no-data-icon">
+                                    <i class="fas fa-file-upload"></i>
+                                </div>
+                                <h3>У вас пока нет резюме</h3>
+                                <p>Создайте свое первое резюме или загрузите существующий файл</p>
+                                <div class="btn-group">
+                                    <button class="btn primary">Создать резюме</button>
+                                    <button class="btn btn-outline">Загрузить файл</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Вкладка "Отклики на вакансии" -->
+                        <div id="applications" class="profile-tab">
+                            <h2>Отклики на вакансии</h2>
+                            <p class="tab-description">Здесь отображаются вакансии, на которые вы откликнулись.</p>
+                            
+                            <div class="profile-no-data">
+                                <div class="no-data-icon">
+                                    <i class="fas fa-briefcase"></i>
+                                </div>
+                                <h3>Нет активных откликов</h3>
+                                <p>Вы еще не откликались на вакансии</p>
+                                <a href="jobs.html" class="btn primary">Поиск вакансий</a>
+                            </div>
+                        </div>
+
+                        <!-- Вкладка "Избранные вакансии" -->
+                        <div id="saved-jobs" class="profile-tab">
+                            <h2>Избранные вакансии</h2>
+                            <p class="tab-description">Здесь отображаются вакансии, которые вы добавили в избранное.</p>
+                            
+                            <div class="profile-no-data">
+                                <div class="no-data-icon">
+                                    <i class="fas fa-bookmark"></i>
+                                </div>
+                                <h3>Нет сохраненных вакансий</h3>
+                                <p>Вы еще не добавили вакансии в избранное</p>
+                                <a href="jobs.html" class="btn primary">Поиск вакансий</a>
+                            </div>
+                        </div>
+
+                        <!-- Вкладка "Настройки" -->
+                        <div id="settings" class="profile-tab">
+                            <h2>Настройки</h2>
+
+                            <div class="settings-section">
+                                <h3>Настройки уведомлений</h3>
+                                <div class="settings-option">
+                                    <div class="settings-option-text">
+                                        <h4>Email-уведомления</h4>
+                                        <p>Получение уведомлений о новых вакансиях</p>
+                                    </div>
+                                    <div class="toggle-switch">
+                                        <input type="checkbox" id="email-notifications" checked>
+                                        <label for="email-notifications"></label>
+                                    </div>
+                                </div>
+                                
+                                <div class="settings-option">
+                                    <div class="settings-option-text">
+                                        <h4>Уведомления о статусе отклика</h4>
+                                        <p>Получение уведомлений об изменении статуса ваших откликов</p>
+                                    </div>
+                                    <div class="toggle-switch">
+                                        <input type="checkbox" id="application-notifications" checked>
+                                        <label for="application-notifications"></label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h3>Безопасность</h3>
+                                <div class="form-group">
+                                    <button id="change-password-btn" class="btn btn-outline">Изменить пароль</button>
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h3>Управление аккаунтом</h3>
+                                <div class="form-group">
+                                    <button id="delete-account-btn" class="btn btn-danger">Удалить аккаунт</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <a href="index.html" class="logo">Searh<span>Job</span></a>
+                    <p>Ваш помощник в поиске идеальной работы</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Навигация</h4>
+                    <ul>
+                        <li><a href="index.html">Главная</a></li>
+                        <li><a href="jobs.html">Вакансии</a></li>
+                        <li><a href="companies.html">Компании</a></li>
+                        <li><a href="about.html">О нас</a></li>
+                        <li><a href="contact.html">Контакты</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>Контакты</h4>
+                    <p><i class="fas fa-envelope"></i> info@searhjob.com</p>
+                    <p><i class="fas fa-phone"></i> +380 (XX) XXX-XX-XX</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 SearhJob. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/api-config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/api-status.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/profile.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

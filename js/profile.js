@@ -5,6 +5,147 @@
  * профиля пользователя, его сохраненных вакансий, откликов и резюме.
  */
 
+// При загрузке DOM добавляем обработчики для страницы профиля
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация профиля
+    initProfilePage();
+});
+
+// Инициализация страницы профиля
+function initProfilePage() {
+    try {
+        // Проверяем, авторизован ли пользователь
+        if (typeof AuthAPI !== 'undefined' && AuthAPI.isAuthenticated()) {
+            const user = AuthAPI.getCurrentUser();
+            if (user) {
+                // Показываем содержимое профиля
+                document.getElementById('profile-content').style.display = 'flex';
+                document.getElementById('unauthenticated-message').style.display = 'none';
+                
+                // Заполняем данные пользователя
+                updateProfileUI(user);
+                
+                // Инициализируем обработчики событий
+                initProfileHandlers();
+            } else {
+                showUnauthenticatedMessage();
+            }
+        } else {
+            showUnauthenticatedMessage();
+        }
+    } catch (error) {
+        console.error('Error initializing profile page:', error);
+        showUnauthenticatedMessage();
+    }
+}
+
+// Обновление UI профиля
+function updateProfileUI(user) {
+    // Заполняем имя и email
+    document.getElementById('profile-name').textContent = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Пользователь';
+    document.getElementById('profile-email').textContent = user.email || '';
+    
+    // Инициалы для аватара
+    const firstInitial = user.firstName ? user.firstName.charAt(0).toUpperCase() : '';
+    const lastInitial = user.lastName ? user.lastName.charAt(0).toUpperCase() : '';
+    document.getElementById('profile-avatar-initials').textContent = (firstInitial + lastInitial) || 'П';
+    
+    // Заполняем форму личных данных
+    document.getElementById('first-name').value = user.firstName || '';
+    document.getElementById('last-name').value = user.lastName || '';
+    document.getElementById('email').value = user.email || '';
+    document.getElementById('phone').value = user.phone || '';
+    document.getElementById('location').value = user.location || '';
+}
+
+// Отображение сообщения для неавторизованных пользователей
+function showUnauthenticatedMessage() {
+    document.getElementById('profile-content').style.display = 'none';
+    document.getElementById('unauthenticated-message').style.display = 'block';
+}
+
+// Инициализация обработчиков событий профиля
+function initProfileHandlers() {
+    // Обработчик выхода из системы
+    document.getElementById('logout-btn').addEventListener('click', function() {
+        if (confirm('Вы уверены, что хотите выйти из системы?')) {
+            AuthAPI.logout();
+            window.location.href = 'index.html';
+        }
+    });
+    
+    // Обработчик переключения между вкладками
+    const tabLinks = document.querySelectorAll('.profile-menu a');
+    const tabs = document.querySelectorAll('.profile-tab');
+    
+    tabLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Получаем ID вкладки из атрибута href
+            const tabId = this.getAttribute('href');
+            
+            // Удаляем класс active со всех ссылок меню и вкладок
+            tabLinks.forEach(link => {
+                link.parentElement.classList.remove('active');
+            });
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Добавляем класс active текущей ссылке и вкладке
+            this.parentElement.classList.add('active');
+            document.querySelector(tabId).classList.add('active');
+        });
+    });
+    
+    // Обработчик формы личной информации
+    document.getElementById('personal-info-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Получаем данные формы
+        const formData = {
+            firstName: document.getElementById('first-name').value,
+            lastName: document.getElementById('last-name').value,
+            phone: document.getElementById('phone').value,
+            location: document.getElementById('location').value
+        };
+        
+        // Здесь будет отправка данных на сервер
+        console.log('Updating profile data:', formData);
+        
+        // Показываем сообщение об успехе
+        showMessage('success', 'Данные профиля успешно обновлены!');
+        
+        // Обновляем отображаемые данные
+        document.getElementById('profile-name').textContent = 
+            `${formData.firstName || ''} ${formData.lastName || ''}`.trim() || 'Пользователь';
+        
+        const firstInitial = formData.firstName ? formData.firstName.charAt(0).toUpperCase() : '';
+        const lastInitial = formData.lastName ? formData.lastName.charAt(0).toUpperCase() : '';
+        document.getElementById('profile-avatar-initials').textContent = (firstInitial + lastInitial) || 'П';
+    });
+}
+
+// Функция для отображения сообщений
+function showMessage(type, text) {
+    // Создаем элемент сообщения
+    const messageEl = document.createElement('div');
+    messageEl.className = `message ${type}`;
+    messageEl.textContent = text;
+    
+    // Добавляем сообщение в DOM
+    document.body.appendChild(messageEl);
+    
+    // Удаляем через 3 секунды
+    setTimeout(() => {
+        messageEl.classList.add('fade-out');
+        setTimeout(() => {
+            messageEl.removeChild(messageEl);
+        }, 500);
+    }, 3000);
+}
+
 // Глобальные переменные
 let currentUser = null;
 let userResume = null;

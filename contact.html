@@ -16,12 +16,21 @@
                     <ul>
                         <li><a href="index.html">Главная</a></li>
                         <li><a href="jobs.html">Вакансии</a></li>
-                        <li><a href="companies.html">Компании</a></li>
-                        <li><a href="about.html">О нас</a></li>
+                        <li><a href="companies.html">Компании</a></li>                        <li><a href="about.html">О нас</a></li>
                         <li><a href="contact.html" class="active">Контакты</a></li>
-                        <li><a href="profile.html"><i class="fas fa-user"></i> Профиль</a></li>
+                        <li class="nav-profile" style="display:none;">
+                            <a href="profile.html"><i class="fas fa-user"></i> Профиль</a>
+                        </li>
+                        <li class="auth-nav">
+                            <a href="register.html" class="btn btn-outline">Регистрация</a>
+                            <a href="login.html" class="btn primary">Вход</a>
+                        </li>
                     </ul>
                 </nav>
+            </div>
+            <!-- Индикатор статуса API -->
+            <div id="api-status-container" class="api-status-wrapper">
+                <!-- Сюда будет внедрен индикатор статуса API -->
             </div>
         </div>
     </header>
@@ -43,9 +52,8 @@
                             <div class="contact-icon">
                                 <i class="fas fa-map-marker-alt"></i>
                             </div>
-                            <div class="contact-text">
-                                <h3>Адрес</h3>
-                                <p>г. Москва, ул. Примерная, д. 123, офис 456</p>
+                            <div class="contact-text">                                <h3>Адрес</h3>
+                                <p>г. Харьков, ул. Сумская, д. 45, офис 202</p>
                             </div>
                         </div>
                         <div class="contact-item">
@@ -54,8 +62,8 @@
                             </div>
                             <div class="contact-text">
                                 <h3>Телефон</h3>
-                                <p>+7 (XXX) XXX-XX-XX</p>
-                                <p>+7 (XXX) XXX-XX-XX</p>
+                                <p>+380 (XX) XXX-XX-XX</p>
+                                <p>+380 (XX) XXX-XX-XX</p>
                             </div>
                         </div>
                         <div class="contact-item">
@@ -212,7 +220,9 @@
         </div>
     </footer>
 
+    <script src="js/api-config.js"></script>
     <script src="js/api.js"></script>
+    <script src="js/api-status.js"></script>
     <script src="js/main.js"></script>
     <script>
         // Обработка формы контактов

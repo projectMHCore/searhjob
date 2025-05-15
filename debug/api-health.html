@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Health Check - SearhJob</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .health-check-container {
+            max-width: 800px;
+            margin: 2rem auto;
+        }
+        
+        .health-check-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .endpoint-status {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .endpoint-status:last-child {
+            border-bottom: none;
+        }
+        
+        .endpoint-name {
+            font-weight: bold;
+            flex: 1;
+        }
+        
+        .endpoint-url {
+            color: #666;
+            flex: 2;
+            word-break: break-all;
+        }
+        
+        .status-indicator {
+            flex: 0 0 80px;
+            text-align: center;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        .status-ok {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .response-time {
+            flex: 0 0 100px;
+            text-align: right;
+            color: #6c757d;
+        }
+        
+        .metrics-card {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .metric-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #0056b3;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #0056b3;
+            margin: 10px 0;
+        }
+        
+        .metric-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+        
+        .config-section {
+            margin-bottom: 20px;
+        }
+        
+        .refresh-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <a href="../index.html" class="logo">Searh<span>Job</span></a>
+                <nav>
+                    <ul>
+                        <li><a href="../index.html">Главная</a></li>
+                        <li><a href="index.html">Инструменты</a></li>
+                        <li><a href="api-status.html">Статус API</a></li>
+                        <li><a href="api-health.html" class="active">Здоровье API</a></li>
+                    </ul>
+                </nav>
+                <div id="api-status-container"></div>
+            </div>
+        </header>
+        
+        <main>
+            <div class="health-check-container">
+                <h1>Мониторинг здоровья API</h1>
+                
+                <div class="health-check-card">
+                    <h2>Настройки мониторинга</h2>
+                    <div class="config-section">
+                        <label for="proxy-selector">CORS Прокси:</label>
+                        <select id="proxy-selector" class="form-control">
+                            <option value="direct">Прямое подключение</option>
+                            <option value="corsproxy" selected>CORS Proxy</option>
+                            <option value="allorigins">All Origins</option>
+                            <option value="corsanywhere">CORS Anywhere</option>
+                        </select>
+                    </div>
+                    
+                    <div class="refresh-controls">
+                        <button id="refresh-now" class="btn">Обновить сейчас</button>
+                        <div>
+                            <label for="refresh-interval">Интервал обновления:</label>
+                            <select id="refresh-interval" class="form-control">
+                                <option value="0">Выключено</option>
+                                <option value="30000">30 секунд</option>
+                                <option value="60000" selected>1 минута</option>
+                                <option value="300000">5 минут</option>
+                                <option value="600000">10 минут</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="health-check-card">
+                    <h2>Сводные метрики</h2>
+                    <div class="metrics-card">
+                        <div class="metric-box">
+                            <div class="metric-label">Доступность</div>
+                            <div id="uptime-metric" class="metric-value">-</div>
+                            <div class="metric-unit">%</div>
+                        </div>
+                        
+                        <div class="metric-box">
+                            <div class="metric-label">Среднее время ответа</div>
+                            <div id="response-time-metric" class="metric-value">-</div>
+                            <div class="metric-unit">мс</div>
+                        </div>
+                        
+                        <div class="metric-box">
+                            <div class="metric-label">Доступные эндпоинты</div>
+                            <div id="endpoints-metric" class="metric-value">-</div>
+                            <div class="metric-unit">из 0</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="health-check-card">
+                    <h2>Детальный статус</h2>
+                    <div id="endpoints-status">
+                        <p>Загрузка данных о статусе эндпоинтов...</p>
+                    </div>
+                </div>
+                
+                <div class="health-check-card">
+                    <h2>История проверок</h2>
+                    <div id="check-history">
+                        <p>История проверок будет отображаться здесь...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-section">
+                        <h3>О SearhJob</h3>
+                        <p>Платформа для поиска работы, объединяющая соискателей и работодателей.</p>
+                    </div>
+                    
+                    <div class="footer-section">
+                        <h3>Инструменты</h3>
+                        <ul>
+                            <li><a href="index.html">Меню инструментов</a></li>
+                            <li><a href="api-status.html">Статус API</a></li>
+                            <li><a href="api-health.html">Здоровье API</a></li>
+                            <li><a href="api-tester.html">Тестер API</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="footer-bottom">
+                    <p>&copy; 2025 SearhJob. Все права защищены.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <script src="../js/api-config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/api-status.js"></script>
+    <script>
+        // Базовый URL API
+        const baseApiUrl = 'http://89.35.130.223:25063';
+        
+        // Список эндпоинтов для проверки
+        const endpoints = [
+            { name: 'Пинг API', endpoint: 'ping', method: 'GET', critical: true },
+            { name: 'Статус API', endpoint: 'api/v1/status', method: 'GET', critical: true },
+            { name: 'Список вакансий', endpoint: 'api/v1/jobs', method: 'GET', critical: false },
+            { name: 'Список компаний', endpoint: 'api/v1/companies', method: 'GET', critical: false }
+        ];
+        
+        // История проверок
+        let checkHistory = [];
+        
+        // Таймер для автоматического обновления
+        let refreshTimer = null;
+        
+        // Функция для получения URL с прокси
+        function getProxyUrl(url) {
+            const proxySelector = document.getElementById('proxy-selector');
+            const proxyType = proxySelector ? proxySelector.value : localStorage.getItem('searhJob_corsProxy') || 'direct';
+            
+            // Сохраняем выбранный прокси для использования в других частях приложения
+            if (proxyType) localStorage.setItem('searhJob_corsProxy', proxyType);
+            
+            if (window.ApiStatus && typeof ApiStatus.getCorsProxyUrl === 'function') {
+                return ApiStatus.getCorsProxyUrl(url);
+            }
+            
+            switch (proxyType) {
+                case 'corsproxy':
+                    return `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                case 'allorigins':
+                    return `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+                case 'corsanywhere':
+                    return `https://cors-anywhere.herokuapp.com/${url}`;
+                case 'direct':
+                default:
+                    return url;
+            }
+        }
+        
+        // Проверка одного эндпоинта
+        async function checkEndpoint(endpoint) {
+            const url = `${baseApiUrl}/${endpoint.endpoint}`;
+            const startTime = Date.now();
+            let status = 'error';
+            let statusCode = 0;
+            let responseTime = 0;
+            let responseData = null;
+            
+            try {
+                const proxyUrl = getProxyUrl(url);
+                const response = await fetch(proxyUrl, {
+                    method: endpoint.method,
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    timeout: 5000 // 5 секунд таймаут
+                });
+                
+                responseTime = Date.now() - startTime;
+                statusCode = response.status;
+                
+                if (response.ok) {
+                    status = 'ok';
+                    try {
+                        responseData = await response.json();
+                    } catch (e) {
+                        responseData = await response.text();
+                    }
+                } else {
+                    status = 'error';
+                }
+            } catch (error) {
+                status = 'error';
+                responseTime = Date.now() - startTime;
+                console.error(`Ошибка при проверке ${endpoint.endpoint}:`, error);
+            }
+            
+            return {
+                endpoint: endpoint.endpoint,
+                name: endpoint.name,
+                status: status,
+                statusCode: statusCode,
+                responseTime: responseTime,
+                timestamp: Date.now(),
+                data: responseData
+            };
+        }
+        
+        // Проверка всех эндпоинтов
+        async function checkAllEndpoints() {
+            const results = [];
+            
+            for (const endpoint of endpoints) {
+                const result = await checkEndpoint(endpoint);
+                results.push(result);
+            }
+            
+            // Добавляем результаты в историю
+            checkHistory.unshift({
+                timestamp: Date.now(),
+                results: results
+            });
+            
+            // Ограничиваем историю 20 записями
+            if (checkHistory.length > 20) {
+                checkHistory = checkHistory.slice(0, 20);
+            }
+            
+            // Обновляем UI
+            updateMetrics(results);
+            updateEndpointsStatus(results);
+            updateCheckHistory();
+            
+            return results;
+        }
+        
+        // Обновление метрик
+        function updateMetrics(results) {
+            const uptimeMetric = document.getElementById('uptime-metric');
+            const responseTimeMetric = document.getElementById('response-time-metric');
+            const endpointsMetric = document.getElementById('endpoints-metric');
+            
+            if (!uptimeMetric || !responseTimeMetric || !endpointsMetric) return;
+            
+            // Рассчитываем доступность (только для критичных эндпоинтов)
+            const criticalEndpoints = endpoints.filter(e => e.critical);
+            const criticalResults = results.filter(r => 
+                criticalEndpoints.some(e => e.endpoint === r.endpoint)
+            );
+            
+            const availableCritical = criticalResults.filter(r => r.status === 'ok').length;
+            const uptimePercentage = criticalEndpoints.length > 0 
+                ? Math.round((availableCritical / criticalEndpoints.length) * 100) 
+                : 0;
+            
+            // Среднее время ответа для успешных запросов
+            const successfulResults = results.filter(r => r.status === 'ok');
+            const avgResponseTime = successfulResults.length > 0
+                ? Math.round(successfulResults.reduce((sum, r) => sum + r.responseTime, 0) / successfulResults.length)
+                : 0;
+            
+            // Количество доступных эндпоинтов
+            const availableEndpoints = results.filter(r => r.status === 'ok').length;
+            
+            // Обновляем отображение
+            uptimeMetric.textContent = uptimePercentage;
+            responseTimeMetric.textContent = avgResponseTime;
+            endpointsMetric.textContent = `${availableEndpoints} / ${results.length}`;
+        }
+        
+        // Обновление отображения статуса эндпоинтов
+        function updateEndpointsStatus(results) {
+            const endpointsStatusContainer = document.getElementById('endpoints-status');
+            if (!endpointsStatusContainer) return;
+            
+            let html = '';
+            
+            for (const result of results) {
+                const statusClass = result.status === 'ok' ? 'status-ok' : 'status-error';
+                const statusText = result.status === 'ok' ? 'ОК' : 'Ошибка';
+                
+                html += `
+                    <div class="endpoint-status">
+                        <div class="endpoint-name">${result.name}</div>
+                        <div class="endpoint-url">${baseApiUrl}/${result.endpoint}</div>
+                        <div class="status-indicator ${statusClass}">${statusText}</div>
+                        <div class="response-time">${result.responseTime} мс</div>
+                    </div>
+                `;
+            }
+            
+            endpointsStatusContainer.innerHTML = html;
+        }
+        
+        // Обновление истории проверок
+        function updateCheckHistory() {
+            const checkHistoryContainer = document.getElementById('check-history');
+            if (!checkHistoryContainer) return;
+            
+            // Если нет истории, показываем соответствующее сообщение
+            if (checkHistory.length === 0) {
+                checkHistoryContainer.innerHTML = '<p>История проверок пуста</p>';
+                return;
+            }
+            
+            let html = '<ul style="list-style: none; padding: 0;">';
+            
+            for (const check of checkHistory) {
+                const timestamp = new Date(check.timestamp).toLocaleString();
+                const successCount = check.results.filter(r => r.status === 'ok').length;
+                const totalCount = check.results.length;
+                const successRate = Math.round((successCount / totalCount) * 100);
+                
+                let statusClass = 'status-ok';
+                if (successRate < 50) statusClass = 'status-error';
+                else if (successRate < 100) statusClass = 'status-warning';
+                
+                html += `
+                    <li style="margin-bottom: 8px; padding: 8px; background-color: #f8f9fa; border-radius: 4px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>${timestamp}</div>
+                            <div class="${statusClass}" style="padding: 2px 8px; border-radius: 4px;">
+                                ${successCount} из ${totalCount} (${successRate}%)
+                            </div>
+                        </div>
+                    </li>
+                `;
+            }
+            
+            html += '</ul>';
+            checkHistoryContainer.innerHTML = html;
+        }
+        
+        // Запуск автоматической проверки
+        function startAutoRefresh() {
+            // Остановим существующий таймер если есть
+            stopAutoRefresh();
+            
+            const intervalSelect = document.getElementById('refresh-interval');
+            if (!intervalSelect) return;
+            
+            const interval = parseInt(intervalSelect.value, 10);
+            if (interval <= 0) return;
+            
+            refreshTimer = setInterval(() => {
+                checkAllEndpoints();
+            }, interval);
+            
+            console.log(`Автообновление запущено с интервалом ${interval / 1000} секунд`);
+        }
+        
+        // Остановка автоматической проверки
+        function stopAutoRefresh() {
+            if (refreshTimer) {
+                clearInterval(refreshTimer);
+                refreshTimer = null;
+                console.log('Автообновление остановлено');
+            }
+        }
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            // Загружаем сохраненный выбор прокси
+            const savedProxy = localStorage.getItem('searhJob_corsProxy');
+            if (savedProxy && document.getElementById('proxy-selector')) {
+                document.getElementById('proxy-selector').value = savedProxy;
+            }
+            
+            // Привязываем обработчики событий
+            const refreshNowButton = document.getElementById('refresh-now');
+            if (refreshNowButton) {
+                refreshNowButton.addEventListener('click', checkAllEndpoints);
+            }
+            
+            const refreshIntervalSelect = document.getElementById('refresh-interval');
+            if (refreshIntervalSelect) {
+                refreshIntervalSelect.addEventListener('change', startAutoRefresh);
+            }
+            
+            const proxySelector = document.getElementById('proxy-selector');
+            if (proxySelector) {
+                proxySelector.addEventListener('change', () => {
+                    localStorage.setItem('searhJob_corsProxy', proxySelector.value);
+                    checkAllEndpoints();
+                    
+                    // Также обновляем глобальный статус API
+                    if (window.ApiStatus) {
+                        ApiStatus.checkApiStatus(true);
+                    }
+                });
+            }
+            
+            // Первая проверка
+            checkAllEndpoints();
+            
+            // Запускаем автоматическую проверку
+            startAutoRefresh();
+            
+            // Подписываемся на изменения статуса API
+            if (window.ApiStatus) {
+                // Добавляем индикатор статуса API в шапку
+                const apiStatusContainer = document.getElementById('api-status-container');
+                if (apiStatusContainer) {
+                    ApiStatus.injectStatusIndicator('api-status-container');
+                }
+                
+                // Подписываемся на изменения статуса
+                ApiStatus.subscribeToStatusChanges((event) => {
+                    console.log('API Status изменился:', event);
+                    
+                    // Если статус изменился на 'connected', запускаем проверку эндпоинтов
+                    if (event.newStatus === ApiStatus.connectionStatus.CONNECTED) {
+                        checkAllEndpoints();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
