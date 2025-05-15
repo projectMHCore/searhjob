@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Компании - SearhJob</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">Searh<span>Job</span></a>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Главная</a></li>
+                        <li><a href="jobs.html">Вакансии</a></li>
+                        <li><a href="companies.html" class="active">Компании</a></li>
+                        <li><a href="about.html">О нас</a></li>
+                        <li><a href="contact.html">Контакты</a></li>
+                        <li><a href="profile.html"><i class="fas fa-user"></i> Профиль</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>Компании</h1>
+                <div class="search-container">
+                    <form id="companies-search-form" class="search-form">
+                        <div class="search-input">
+                            <input type="text" id="company-search" placeholder="Поиск по названию или отрасли">
+                        </div>
+                        <button type="submit" class="btn">
+                            <i class="fas fa-search"></i> Найти
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section class="filters">
+            <div class="container">
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label for="filter-industry">Отрасль</label>
+                        <select id="filter-industry">
+                            <option value="">Все отрасли</option>
+                            <option value="it">IT и технологии</option>
+                            <option value="finance">Финансы и банки</option>
+                            <option value="education">Образование</option>
+                            <option value="healthcare">Медицина</option>
+                            <option value="retail">Розничная торговля</option>
+                            <option value="manufacturing">Производство</option>
+                            <option value="marketing">Маркетинг и реклама</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-size">Размер компании</label>
+                        <select id="filter-size">
+                            <option value="">Любой</option>
+                            <option value="small">Малый (до 50 человек)</option>
+                            <option value="medium">Средний (50-500 человек)</option>
+                            <option value="large">Крупный (более 500 человек)</option>
+                        </select>
+                    </div>
+                    <button id="apply-filters" class="btn secondary">Применить фильтры</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="companies-list">
+            <div class="container">
+                <div id="companies-container">
+                    <!-- Здесь будут отображаться компании через JS -->
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i> Загрузка компаний...
+                    </div>
+                </div>
+                <div class="pagination" id="companies-pagination">
+                    <!-- Пагинация будет добавлена через JavaScript -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <a href="index.html" class="logo">Searh<span>Job</span></a>
+                    <p>Ваш помощник в поиске идеальной работы</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Навигация</h4>
+                    <ul>
+                        <li><a href="index.html">Главная</a></li>
+                        <li><a href="jobs.html">Вакансии</a></li>
+                        <li><a href="companies.html">Компании</a></li>
+                        <li><a href="about.html">О нас</a></li>
+                        <li><a href="contact.html">Контакты</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>Контакты</h4>
+                    <p><i class="fas fa-envelope"></i> info@searhjob.com</p>
+                    <p><i class="fas fa-phone"></i> +7 (XXX) XXX-XX-XX</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 SearhJob. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Модальное окно для отображения деталей компании -->
+    <div id="company-details-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="company-details-container">
+                <!-- Детали компании будут добавлены через JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/companies.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

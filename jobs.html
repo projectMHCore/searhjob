@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вакансии - SearhJob</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">Searh<span>Job</span></a>
+                <nav>
+                    <ul>
+                        <li><a href="index.html">Главная</a></li>
+                        <li><a href="jobs.html" class="active">Вакансии</a></li>
+                        <li><a href="companies.html">Компании</a></li>
+                        <li><a href="about.html">О нас</a></li>
+                        <li><a href="contact.html">Контакты</a></li>
+                        <li><a href="profile.html"><i class="fas fa-user"></i> Профиль</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>Поиск вакансий</h1>
+                <div class="search-container">
+                    <form id="jobs-search-form" class="search-form">
+                        <div class="search-input">
+                            <input type="text" id="job-search-keywords" placeholder="Должность, навыки или компания">
+                        </div>
+                        <div class="search-input">
+                            <input type="text" id="job-search-location" placeholder="Город или регион">
+                        </div>
+                        <button type="submit" class="btn">
+                            <i class="fas fa-search"></i> Найти
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section class="filters">
+            <div class="container">
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label for="filter-exp">Опыт работы</label>
+                        <select id="filter-exp">
+                            <option value="">Любой опыт</option>
+                            <option value="no-exp">Без опыта</option>
+                            <option value="1-3">1-3 года</option>
+                            <option value="3-6">3-6 лет</option>
+                            <option value="6+">От 6 лет</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-emp">Тип занятости</label>
+                        <select id="filter-emp">
+                            <option value="">Любая</option>
+                            <option value="full-time">Полная занятость</option>
+                            <option value="part-time">Частичная занятость</option>
+                            <option value="remote">Удаленная работа</option>
+                            <option value="contract">Контракт</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-salary">Зарплата от</label>
+                        <input type="number" id="filter-salary" placeholder="Например, 50000">
+                    </div>
+                    <button id="apply-filters" class="btn secondary">Применить фильтры</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="jobs-list">
+            <div class="container">
+                <div id="jobs-container">
+                    <!-- Здесь будут отображаться найденные вакансии через JS -->
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i> Загрузка вакансий...
+                    </div>
+                </div>
+                <div class="pagination" id="jobs-pagination">
+                    <!-- Пагинация будет добавлена через JavaScript -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <a href="index.html" class="logo">Searh<span>Job</span></a>
+                    <p>Ваш помощник в поиске идеальной работы</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Навигация</h4>
+                    <ul>
+                        <li><a href="index.html">Главная</a></li>
+                        <li><a href="jobs.html">Вакансии</a></li>
+                        <li><a href="companies.html">Компании</a></li>
+                        <li><a href="about.html">О нас</a></li>
+                        <li><a href="contact.html">Контакты</a></li>
+                    </ul>
+                </div>
+                <div class="footer-contact">
+                    <h4>Контакты</h4>
+                    <p><i class="fas fa-envelope"></i> info@searhjob.com</p>
+                    <p><i class="fas fa-phone"></i> +7 (XXX) XXX-XX-XX</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 SearhJob. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Модальное окно для отображения деталей вакансии -->
+    <div id="job-details-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="job-details-container">
+                <!-- Детали вакансии будут добавлены через JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/jobs.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
