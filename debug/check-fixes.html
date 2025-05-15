@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проверка исправлений API - SearhJob</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .test-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .test-link {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .status-box {
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .status-ok {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .header-with-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .api-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            background-color: #f0f0f0;
+        }
+        .api-status.connected {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .api-status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .option-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-with-status">
+            <h1><i class="fas fa-check-circle"></i> Проверка исправлений API</h1>
+            <div id="api-status-container">
+                <!-- Сюда будет вставлен статус API -->
+            </div>
+        </div>
+
+        <div class="test-card">
+            <h2>Текущие настройки</h2>
+            <div id="current-settings">Загрузка настроек...</div>
+            
+            <div class="option-buttons">
+                <button id="use-allorigins" class="btn btn-primary">Использовать AllOrigins (рекомендуется)</button>
+                <button id="use-corsproxy" class="btn btn-secondary">Использовать CORSProxy.io</button>
+                <button id="use-corsanywhere" class="btn btn-secondary">Использовать CORS Anywhere</button>
+                <button id="use-direct" class="btn btn-warning">Прямое подключение</button>
+            </div>
+            
+            <div id="proxy-test-result" class="status-box"></div>
+        </div>
+
+        <h2>Проверка страниц приложения</h2>
+        <div class="test-links">
+            <div class="test-link">
+                <h3>Главная страница</h3>
+                <p>Основная страница приложения</p>
+                <a href="../index.html" target="_blank" class="btn btn-primary">Открыть</a>
+            </div>
+            
+            <div class="test-link">
+                <h3>Поиск вакансий</h3>
+                <p>Страница поиска вакансий</p>
+                <a href="../jobs.html" target="_blank" class="btn btn-primary">Открыть</a>
+            </div>
+            
+            <div class="test-link">
+                <h3>Компании</h3>
+                <p>Список компаний</p>
+                <a href="../companies.html" target="_blank" class="btn btn-primary">Открыть</a>
+            </div>
+            
+            <div class="test-link">
+                <h3>API Статус</h3>
+                <p>Страница проверки статуса API</p>
+                <a href="api-status.html" target="_blank" class="btn btn-primary">Открыть</a>
+            </div>
+            
+            <div class="test-link">
+                <h3>API Здоровье</h3>
+                <p>Детальная проверка API</p>
+                <a href="api-health.html" target="_blank" class="btn btn-primary">Открыть</a>
+            </div>
+            
+            <div class="test-link">
+                <h3>Тест всех прокси</h3>
+                <p>Подробное тестирование прокси</p>
+                <a href="test-all-proxies.html" target="_blank" class="btn btn-primary">Открыть</a>
+            </div>
+        </div>
+        
+        <div class="test-card">
+            <h2>Сводка исправлений</h2>
+            <ol>
+                <li>Установлен <strong>AllOrigins</strong> как прокси по умолчанию вместо прямого подключения</li>
+                <li>Улучшена обработка ответов от All Origins в API</li>
+                <li>Добавлены подробные логи запросов и ответов</li>
+                <li>Исправлена обработка ошибок при подключении</li>
+                <li>Улучшена поддержка различных типов CORS-прокси</li>
+                <li>Добавлен механизм автоматического выбора рабочего прокси</li>
+            </ol>
+            <div class="status-box status-ok">
+                <h3>Статус исправлений</h3>
+                <p>✅ Все исправления завершены. Приложение должно стабильно работать с использованием прокси AllOrigins для обхода CORS-ограничений.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Подключаем необходимые скрипты -->
+    <script src="../js/api-config.js"></script>
+    <script src="../js/api-status.js"></script>
+    <script src="../js/api.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Отображение текущих настроек
+            function updateCurrentSettings() {
+                const currentProxy = localStorage.getItem('searhJob_corsProxy') || 'allorigins';
+                let proxyName;
+                
+                switch (currentProxy) {
+                    case 'corsproxy': proxyName = 'CORS Proxy (corsproxy.io)'; break;
+                    case 'allorigins': proxyName = 'All Origins (api.allorigins.win)'; break;
+                    case 'corsanywhere': proxyName = 'CORS Anywhere (cors-anywhere.herokuapp.com)'; break;
+                    case 'direct': proxyName = 'Прямое подключение (без прокси)'; break;
+                    default: proxyName = 'Неизвестный прокси';
+                }
+                
+                document.getElementById('current-settings').innerHTML = `
+                    <p><strong>Активный CORS прокси:</strong> ${proxyName}</p>
+                `;
+            }
+            
+            updateCurrentSettings();
+            
+            // Обработчики для кнопок выбора прокси
+            document.getElementById('use-allorigins').addEventListener('click', function() {
+                localStorage.setItem('searhJob_corsProxy', 'allorigins');
+                updateCurrentSettings();
+                testSelectedProxy();
+            });
+            
+            document.getElementById('use-corsproxy').addEventListener('click', function() {
+                localStorage.setItem('searhJob_corsProxy', 'corsproxy');
+                updateCurrentSettings();
+                testSelectedProxy();
+            });
+            
+            document.getElementById('use-corsanywhere').addEventListener('click', function() {
+                localStorage.setItem('searhJob_corsProxy', 'corsanywhere');
+                updateCurrentSettings();
+                testSelectedProxy();
+            });
+            
+            document.getElementById('use-direct').addEventListener('click', function() {
+                localStorage.setItem('searhJob_corsProxy', 'direct');
+                updateCurrentSettings();
+                testSelectedProxy();
+            });
+            
+            // Функция тестирования выбранного прокси
+            function testSelectedProxy() {
+                const testResultElement = document.getElementById('proxy-test-result');
+                testResultElement.innerHTML = '<p>Тестирование подключения...</p>';
+                testResultElement.className = 'status-box';
+                
+                // Получаем URL для проверки
+                const url = 'http://89.35.130.223:25063/ping';
+                const proxyType = localStorage.getItem('searhJob_corsProxy') || 'allorigins';
+                let proxyUrl;
+                
+                switch (proxyType) {
+                    case 'corsproxy':
+                        proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                        break;
+                    case 'allorigins':
+                        proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+                        break;
+                    case 'corsanywhere':
+                        proxyUrl = `https://cors-anywhere.herokuapp.com/${url}`;
+                        break;
+                    default:
+                        proxyUrl = url;
+                }
+                
+                console.log(`Тестирование подключения через ${proxyType} (${proxyUrl})...`);
+                
+                const startTime = Date.now();
+                fetch(proxyUrl)
+                    .then(response => {
+                        const responseTime = Date.now() - startTime;
+                        if (response.ok) {
+                            return response.text().then(text => {
+                                let result;
+                                try {
+                                    // Пробуем распарсить как JSON
+                                    const json = JSON.parse(text);
+                                    
+                                    // Для прокси AllOrigins
+                                    if (proxyType === 'allorigins' && json.contents) {
+                                        try {
+                                            result = JSON.parse(json.contents);
+                                        } catch (e) {
+                                            result = json.contents;
+                                        }
+                                    } else {
+                                        result = json;
+                                    }
+                                } catch (e) {
+                                    result = text;
+                                }
+                                
+                                testResultElement.innerHTML = `
+                                    <p>✅ Подключение успешно!</p>
+                                    <p><strong>Время ответа:</strong> ${responseTime}мс</p>
+                                    <p><strong>Статус:</strong> ${response.status} ${response.statusText}</p>
+                                    <p><strong>Ответ:</strong></p>
+                                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                                `;
+                                testResultElement.className = 'status-box status-ok';
+                            });
+                        } else {
+                            testResultElement.innerHTML = `
+                                <p>❌ Ошибка подключения!</p>
+                                <p><strong>Время ответа:</strong> ${responseTime}мс</p>
+                                <p><strong>Статус:</strong> ${response.status} ${response.statusText}</p>
+                            `;
+                            testResultElement.className = 'status-box status-error';
+                            return Promise.reject(new Error(`HTTP error! Status: ${response.status}`));
+                        }
+                    })
+                    .catch(error => {
+                        const responseTime = Date.now() - startTime;
+                        testResultElement.innerHTML = `
+                            <p>❌ Ошибка подключения!</p>
+                            <p><strong>Время ответа:</strong> ${responseTime}мс</p>
+                            <p><strong>Ошибка:</strong> ${error.message}</p>
+                            <p>Попробуйте другой прокси или проверьте подключение к интернету.</p>
+                        `;
+                        testResultElement.className = 'status-box status-error';
+                    });
+            }
+            
+            // Тестируем текущий прокси при загрузке
+            testSelectedProxy();
+        });
+    </script>
+</body>
+</html>

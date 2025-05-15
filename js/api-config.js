@@ -19,14 +19,24 @@ const API_CONFIG = {
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
-    },
-    // Функция для получения URL с учетом CORS-прокси
+    },    // Функция для получения URL с учетом CORS-прокси
     getCorsProxyUrl: function(url) {
-        // Если мы на GitHub Pages, используем CORS прокси
-        if (window.location.hostname.includes('github.io')) {
-            return `https://corsproxy.io/?${encodeURIComponent(url)}`;
+        // Получаем из localStorage предпочтительный способ обхода CORS
+        const proxyType = localStorage.getItem('searhJob_corsProxy') || 'allorigins';
+        
+        switch (proxyType) {
+            case 'corsproxy':
+                return `https://corsproxy.io/?${encodeURIComponent(url)}`;
+            case 'allorigins':
+                return `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+            case 'corsanywhere':
+                return `https://cors-anywhere.herokuapp.com/${url}`;
+            case 'direct':
+                return url;
+            default:
+                // По умолчанию используем allorigins, т.к. он стабильно работает
+                return `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
         }
-        return url;
     }
 };
 

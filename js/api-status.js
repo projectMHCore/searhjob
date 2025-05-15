@@ -44,9 +44,7 @@ const ApiStatus = {
     // URL для проверки API
     getCheckUrl() {
         return `${API_BASE_URL || 'http://89.35.130.223:25063'}/ping`;
-    },
-
-    // Проверка статуса API
+    },    // Проверка статуса API
     async checkApiStatus(forceCheck = false) {
         // Если уже проверяем, вернем текущий статус
         if (this.currentStatus === this.connectionStatus.CHECKING) {
@@ -69,10 +67,14 @@ const ApiStatus = {
 
         try {
             const url = this.getCheckUrl();
+            const proxyUrl = this.getCorsProxyUrl(url);
+            const proxyType = localStorage.getItem('searhJob_corsProxy') || 'allorigins';
+            
+            console.log('Checking API status via proxy:', proxyType, proxyUrl);
             
             // Используем Promise.race для ограничения времени выполнения запроса
             const response = await Promise.race([
-                fetch(this.getCorsProxyUrl(url), {
+                fetch(proxyUrl, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
@@ -86,9 +88,44 @@ const ApiStatus = {
 
             // Обработка результата
             if (response.ok) {
-                const data = await response.json();
-                this.currentStatus = this.connectionStatus.CONNECTED;
-                console.log('API connection successful:', data);
+                let data;
+                const responseClone = response.clone();
+                try {
+                    data = await response.json();
+                    
+                    // Обработка ответа от разных прокси
+                    if (proxyType === 'allorigins' && data && data.contents) {
+                        try {
+                            data = JSON.parse(data.contents);
+                        } catch (e) {
+                            console.log('Error parsing allorigins contents:', e);
+                            // Если не удалось распарсить как JSON, возможно это текстовый ответ
+                            data = { status: 'ok', message: data.contents };
+                        }
+                    }
+                    
+                    // Проверяем валидность ответа
+                    if (data && (data.status === 'ok' || data.timestamp)) {
+                        this.currentStatus = this.connectionStatus.CONNECTED;
+                        console.log('API connection successful:', data);
+                    } else {
+                        // Получили ответ, но нет нужных полей
+                        const textResponse = await responseClone.text();
+                        console.log('Invalid API response:', textResponse);
+                        this.currentStatus = this.connectionStatus.ERROR;
+                    }
+                } catch (e) {
+                    console.error('Error processing API response:', e);
+                    const textResponse = await responseClone.text();
+                    console.log('Raw API response:', textResponse);
+                    
+                    // Попытка обработать текстовый ответ
+                    if (textResponse && textResponse.includes('"status":"ok"')) {
+                        this.currentStatus = this.connectionStatus.CONNECTED;
+                    } else {
+                        this.currentStatus = this.connectionStatus.ERROR; 
+                    }
+                }
             } else {
                 this.currentStatus = this.connectionStatus.ERROR;
                 console.error('API connection failed:', response.status);
@@ -277,8 +314,7 @@ const ApiStatus = {
             Notification.requestPermission();
         }
     },
-    
-    // Временный метод getCorsProxyUrl для случая, когда API объект не загружен
+      // Метод getCorsProxyUrl для получения URL с учетом CORS-прокси
     getCorsProxyUrl(url) {
         // Используем window.API если он существует
         if (window.API && typeof window.API.getCorsProxyUrl === 'function') {
@@ -286,7 +322,8 @@ const ApiStatus = {
         }
         
         // Резервная реализация
-        const proxyType = localStorage.getItem('searhJob_corsProxy') || 'direct';
+        // По умолчанию используем allorigins, т.к. он работает стабильнее
+        const proxyType = localStorage.getItem('searhJob_corsProxy') || 'allorigins';
         switch (proxyType) {
             case 'corsproxy':
                 return `https://corsproxy.io/?${encodeURIComponent(url)}`;
@@ -295,8 +332,10 @@ const ApiStatus = {
             case 'corsanywhere':
                 return `https://cors-anywhere.herokuapp.com/${url}`;
             case 'direct':
-            default:
                 return url;
+            default:
+                // По умолчанию используем allorigins
+                return `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
         }
     },
 

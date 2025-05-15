@@ -16,16 +16,16 @@ if (window.location.hostname.includes('github.io')) {
 }
 
 // Объект для хранения настроек API
-const API = {
-    // Функция для выбора способа обхода CORS
+const API = {    // Функция для выбора способа обхода CORS
     getCorsProxyUrl(url) {
         // Если мы на GitHub Pages, всегда используем CORS прокси
         if (window.location.hostname.includes('github.io')) {
-            return `https://corsproxy.io/?${encodeURIComponent(url)}`;
+            return `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
         }
         
         // Получаем из localStorage предпочтительный способ обхода CORS
-        const proxyType = localStorage.getItem('searhJob_corsProxy') || 'direct';
+        // По умолчанию используем allorigins, т.к. он работает стабильнее
+        const proxyType = localStorage.getItem('searhJob_corsProxy') || 'allorigins';
         switch (proxyType) {
             case 'corsproxy':
                 return `https://corsproxy.io/?${encodeURIComponent(url)}`;
@@ -36,24 +36,53 @@ const API = {
             case 'local':
                 return `/debug/api_proxy_v2.php?path=${url.replace(API_BASE_URL, '')}`;
             case 'direct':
-            default:
                 return url;
+            default:
+                // По умолчанию используем allorigins
+                return `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
         }
     },
-    
-    // Обработка ответа от CORS прокси
+      // Обработка ответа от CORS прокси
     processProxyResponse(response, responseType) {
-        const proxyType = localStorage.getItem('searhJob_corsProxy') || 'direct';
+        const proxyType = localStorage.getItem('searhJob_corsProxy') || 'allorigins';
         
-        if (proxyType === 'allorigins') {
-            // AllOrigins оборачивает ответ в свой формат
-            if (responseType === 'json') {
-                return JSON.parse(response.contents);
+        try {
+            if (proxyType === 'allorigins') {
+                // AllOrigins оборачивает ответ в свой формат
+                if (responseType === 'json') {
+                    if (response && typeof response.contents === 'string') {
+                        try {
+                            return JSON.parse(response.contents);
+                        } catch (e) {
+                            console.error('Error parsing JSON from allorigins:', e);
+                            return response.contents;
+                        }
+                    } else if (typeof response === 'string') {
+                        // В случае, если response - строка
+                        try {
+                            const parsedResponse = JSON.parse(response);
+                            if (parsedResponse.contents) {
+                                return JSON.parse(parsedResponse.contents);
+                            }
+                            return parsedResponse;
+                        } catch (e) {
+                            console.error('Error parsing string response:', e);
+                            return response;
+                        }
+                    }
+                    // На случай, если contents уже объект
+                    return response.contents || response;
+                } else {
+                    return response.contents || response;
+                }
             }
-            return response.contents;
+            
+            return response;
+        } catch (error) {
+            console.error('Error processing proxy response:', error);
+            // В случае ошибки возвращаем оригинальный ответ
+            return response;
         }
-        
-        return response;
     },
     
     // Базовая функция для выполнения запросов к API
@@ -74,29 +103,69 @@ const API = {
             if (fetchOptions.method !== 'GET' && options.body) {
                 fetchOptions.body = JSON.stringify(options.body);
             }
-            
+              console.log('API request:', endpoint, 'via proxy:', proxyUrl);
+            const startTime = Date.now();
             const response = await fetch(proxyUrl, fetchOptions);
+            const requestTime = Date.now() - startTime;
+            console.log(`API response time: ${requestTime}ms`);
             
-            if (!response.ok) {
+            // Обрабатываем ответы от прокси-сервисов по-особому
+            const proxyType = localStorage.getItem('searhJob_corsProxy') || 'allorigins';
+            
+            // Проверяем статус ответа
+            if (!response.ok && proxyType !== 'allorigins') {
+                // Для других прокси, кроме allorigins, обрабатываем ответы со статусом не 200
                 throw new Error(`API error: ${response.status} ${response.statusText}`);
             }
             
             // Получаем данные в зависимости от типа ответа
             let data;
             const responseType = options.responseType || 'json';
+            const responseClone = response.clone();
             
-            switch (responseType) {
-                case 'json':
-                    data = await response.json();
-                    break;
-                case 'text':
-                    data = await response.text();
-                    break;
-                case 'blob':
-                    data = await response.blob();
-                    break;
-                default:
-                    data = await response.json();
+            try {
+                switch (responseType) {
+                    case 'json':
+                        data = await response.json();
+                        break;
+                    case 'text':
+                        data = await response.text();
+                        break;
+                    case 'blob':
+                        data = await response.blob();
+                        break;
+                    default:
+                        data = await response.json();
+                }
+                
+                // Если это прокси AllOrigins, то даже ответ с ошибкой получаем как JSON
+                if (proxyType === 'allorigins' && !response.ok) {
+                    console.warn('AllOrigins returned error response:', data);
+                    if (data && data.status && data.status.http_code !== 200) {
+                        throw new Error(`API error: ${data.status.http_code}`);
+                    }
+                }
+            } catch (error) {
+                // Если не удалось получить данные в указанном формате, пробуем получить как текст
+                try {
+                    const textData = await responseClone.text();
+                    console.warn('Failed to parse response, raw data:', textData);
+                    
+                    // Если это строка JSON, попробуем распарсить
+                    if (responseType === 'json' && textData.includes('{') && textData.includes('}')) {
+                        try {
+                            data = JSON.parse(textData);
+                        } catch (e) {
+                            console.error('Failed to parse JSON from response:', e);
+                            data = textData;
+                        }
+                    } else {
+                        data = textData;
+                    }
+                } catch (e) {
+                    console.error('Failed to read response as text:', e);
+                    throw error; // Если и это не удалось, выбрасываем исходную ошибку
+                }
             }
             
             return this.processProxyResponse(data, responseType);
