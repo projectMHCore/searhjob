@@ -10,7 +10,6 @@
 2. Тестировать различные эндпоинты API
 3. Обходить ограничения CORS с помощью публичных прокси-серверов
 4. Проверять доступность API сервера
-
 ## Использование
 
 1. Откройте [https://yourgithubusername.github.io/searhjob-api-tester](https://yourgithubusername.github.io/searhjob-api-tester) (замените yourgithubusername на ваше имя пользователя GitHub)
