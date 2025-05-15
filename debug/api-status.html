@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проверка статуса API</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .status-card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-success {
+            background-color: #4CAF50;
+        }
+        
+        .status-error {
+            background-color: #F44336;
+        }
+        
+        .status-pending {
+            background-color: #FFC107;
+        }
+        
+        .status-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .status-details {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .status-time {
+            font-size: 0.8em;
+            color: #999;
+            margin-top: 10px;
+        }
+        
+        .refresh-btn {
+            padding: 8px 15px;
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        
+        .refresh-btn:hover {
+            background-color: #003d7a;
+        }
+        
+        .proxy-options {
+            margin-bottom: 20px;
+        }
+        
+        select {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Проверка статуса API</h1>
+        
+        <div class="card">
+            <h2>Настройки проверки</h2>
+            
+            <div class="proxy-options">
+                <label for="proxyService">Использовать CORS прокси:</label>
+                <select id="proxyService">
+                    <option value="direct">Прямое соединение (без прокси)</option>
+                    <option value="corsproxy" selected>CORS Proxy IO</option>
+                    <option value="allorigins">All Origins</option>
+                    <option value="corsanywhere">CORS Anywhere</option>
+                </select>
+            </div>
+            
+            <button id="refreshStatus" class="refresh-btn">Обновить статус</button>
+        </div>
+        
+        <div class="card">
+            <h2>Статус API эндпоинтов</h2>
+            <div id="statusGrid" class="status-grid">
+                <!-- Здесь будут отображаться статусы API эндпоинтов -->
+                <div class="status-card">
+                    <div class="status-header">
+                        <span class="status-indicator status-pending"></span>
+                        <h3>API Сервер</h3>
+                    </div>
+                    <p>Проверка доступности основного API сервера...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Сводка статуса</h2>
+            <div id="statusSummary">
+                <p>Загрузка данных о статусе API...</p>
+            </div>
+        </div>
+        
+        <footer>
+            <p>SearhJob API статус &copy; 2025</p>
+            <p><a href="../index.html">Вернуться на главную</a></p>
+        </footer>
+    </div>
+    
+    <script>
+        // Базовый URL API
+        const baseApiUrl = 'http://89.35.130.223:25063';
+        
+        // Список эндпоинтов для проверки
+        const endpoints = [
+            { name: 'API Сервер', url: `${baseApiUrl}/`, method: 'GET' },
+            { name: 'Список вакансий', url: `${baseApiUrl}/jobs`, method: 'GET' },
+            { name: 'Вакансия по ID', url: `${baseApiUrl}/jobs/1`, method: 'GET' },
+            { name: 'Поиск вакансий', url: `${baseApiUrl}/jobs/search?q=developer`, method: 'GET' },
+            { name: 'Список компаний', url: `${baseApiUrl}/companies`, method: 'GET' },
+            { name: 'Компания по ID', url: `${baseApiUrl}/companies/1`, method: 'GET' },
+            { name: 'Аутентификация', url: `${baseApiUrl}/auth/login`, method: 'POST' }
+        ];
+        
+        // Функция для получения URL с прокси
+        function getProxyUrl(targetUrl) {
+            const proxyService = document.getElementById('proxyService').value;
+            
+            switch (proxyService) {
+                case 'corsproxy':
+                    return `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+                case 'allorigins':
+                    return `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+                case 'corsanywhere':
+                    return `https://cors-anywhere.herokuapp.com/${targetUrl}`;
+                case 'direct':
+                default:
+                    return targetUrl;
+            }
+        }
+        
+        // Функция для проверки статуса эндпоинта
+        async function checkEndpoint(endpoint) {
+            try {
+                const proxyUrl = getProxyUrl(endpoint.url);
+                const options = {
+                    method: endpoint.method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                };
+                
+                if (endpoint.method === 'POST') {
+                    options.body = JSON.stringify({
+                        email: 'test@example.com',
+                        password: 'password123'
+                    });
+                }
+                
+                const startTime = new Date();
+                const response = await fetch(proxyUrl, options);
+                const endTime = new Date();
+                const responseTime = endTime - startTime;
+                
+                return {
+                    success: response.ok,
+                    status: response.status,
+                    statusText: response.statusText,
+                    responseTime: responseTime
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    status: 0,
+                    statusText: error.message,
+                    responseTime: 0
+                };
+            }
+        }
+        
+        // Функция для обновления статусов всех эндпоинтов
+        async function updateAllStatuses() {
+            const statusGrid = document.getElementById('statusGrid');
+            statusGrid.innerHTML = '';
+            
+            let successCount = 0;
+            let failCount = 0;
+            
+            for (const endpoint of endpoints) {
+                const statusCard = document.createElement('div');
+                statusCard.className = 'status-card';
+                
+                statusCard.innerHTML = `
+                    <div class="status-header">
+                        <span class="status-indicator status-pending"></span>
+                        <h3>${endpoint.name}</h3>
+                    </div>
+                    <p>Проверка ${endpoint.method} ${endpoint.url}...</p>
+                `;
+                
+                statusGrid.appendChild(statusCard);
+                
+                const result = await checkEndpoint(endpoint);
+                
+                if (result.success) {
+                    successCount++;
+                    statusCard.innerHTML = `
+                        <div class="status-header">
+                            <span class="status-indicator status-success"></span>
+                            <h3>${endpoint.name}</h3>
+                        </div>
+                        <p>Эндпоинт доступен</p>
+                        <div class="status-details">
+                            <p>Статус: ${result.status} ${result.statusText}</p>
+                            <p>Время ответа: ${result.responseTime}мс</p>
+                        </div>
+                        <div class="status-time">
+                            Последняя проверка: ${new Date().toLocaleTimeString()}
+                        </div>
+                    `;
+                } else {
+                    failCount++;
+                    statusCard.innerHTML = `
+                        <div class="status-header">
+                            <span class="status-indicator status-error"></span>
+                            <h3>${endpoint.name}</h3>
+                        </div>
+                        <p>Эндпоинт недоступен</p>
+                        <div class="status-details">
+                            <p>Ошибка: ${result.status} ${result.statusText}</p>
+                        </div>
+                        <div class="status-time">
+                            Последняя проверка: ${new Date().toLocaleTimeString()}
+                        </div>
+                    `;
+                }
+            }
+            
+            // Обновляем сводку
+            const statusSummary = document.getElementById('statusSummary');
+            const totalEndpoints = endpoints.length;
+            const successRate = Math.round((successCount / totalEndpoints) * 100);
+            
+            statusSummary.innerHTML = `
+                <p>Всего проверено эндпоинтов: ${totalEndpoints}</p>
+                <p>Доступные эндпоинты: ${successCount} (${successRate}%)</p>
+                <p>Недоступные эндпоинты: ${failCount}</p>
+                <p>Последнее обновление: ${new Date().toLocaleString()}</p>
+            `;
+            
+            if (successRate === 100) {
+                statusSummary.innerHTML += `<p style="color: #4CAF50; font-weight: bold;">✅ API полностью доступно</p>`;
+            } else if (successRate >= 70) {
+                statusSummary.innerHTML += `<p style="color: #FFC107; font-weight: bold;">⚠️ API частично доступно</p>`;
+            } else {
+                statusSummary.innerHTML += `<p style="color: #F44336; font-weight: bold;">❌ API недоступно или имеет серьезные проблемы</p>`;
+            }
+        }
+        
+        // Обработчик кнопки обновления
+        document.getElementById('refreshStatus').addEventListener('click', updateAllStatuses);
+        
+        // Первоначальная проверка статусов
+        document.addEventListener('DOMContentLoaded', updateAllStatuses);
+    </script>
+</body>
+</html>

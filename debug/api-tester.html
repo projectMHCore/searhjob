@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Тестер с использованием CORS прокси</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .api-form {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        textarea {
+            height: 100px;
+        }
+        
+        button {
+            padding: 8px 15px;
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #003d7a;
+        }
+        
+        .result {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        
+        .result pre {
+            white-space: pre-wrap;
+            word-break: break-all;
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 3px;
+            max-height: 400px;
+            overflow: auto;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-success {
+            background-color: #4CAF50;
+        }
+        
+        .status-error {
+            background-color: #F44336;
+        }
+        
+        .status-warning {
+            background-color: #FF9800;
+        }
+        
+        .proxy-select {
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            margin-right: 5px;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .tab.active {
+            background-color: #0056b3;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>API Тестер с использованием CORS прокси</h1>
+        
+        <div class="card">
+            <h2>Выберите CORS прокси-сервис</h2>
+            <p>Для обхода ограничений CORS при запросах к API с другого домена</p>
+            
+            <select id="proxyService" class="proxy-select">
+                <option value="direct">Прямое соединение (без прокси)</option>
+                <option value="corsproxy" selected>CORS Proxy IO</option>
+                <option value="allorigins">All Origins</option>
+                <option value="corsanywhere">CORS Anywhere</option>
+            </select>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="simple">Простой тестер</div>
+            <div class="tab" data-tab="advanced">Расширенный тестер</div>
+            <div class="tab" data-tab="batch">Пакетные запросы</div>
+        </div>
+        
+        <div class="tab-content active" id="simple">
+            <div class="card">
+                <h2>Простой тестер API</h2>
+                <div class="api-form">
+                    <div class="form-group">
+                        <label for="apiUrl">URL API:</label>
+                        <input type="text" id="apiUrl" value="http://89.35.130.223:25063/jobs">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="method">HTTP Метод:</label>
+                        <select id="method">
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PUT">PUT</option>
+                            <option value="DELETE">DELETE</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="requestData">Тело запроса (для POST, PUT):</label>
+                        <textarea id="requestData" placeholder="{}">{}</textarea>
+                    </div>
+                    
+                    <button id="sendRequest">Отправить запрос</button>
+                </div>
+                
+                <div class="result">
+                    <h3>Результат запроса</h3>
+                    <div id="requestStatus"></div>
+                    <pre id="responseData">Результат запроса будет отображен здесь</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="advanced">
+            <div class="card">
+                <h2>Расширенный тестер API</h2>
+                <div class="api-form">
+                    <div class="form-group">
+                        <label for="advApiUrl">URL API:</label>
+                        <input type="text" id="advApiUrl" value="http://89.35.130.223:25063/jobs">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="advMethod">HTTP Метод:</label>
+                        <select id="advMethod">
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PUT">PUT</option>
+                            <option value="DELETE">DELETE</option>
+                            <option value="PATCH">PATCH</option>
+                            <option value="HEAD">HEAD</option>
+                            <option value="OPTIONS">OPTIONS</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="advHeaders">Заголовки (в формате JSON):</label>
+                        <textarea id="advHeaders" placeholder="{&#10;  &quot;Content-Type&quot;: &quot;application/json&quot;,&#10;  &quot;Authorization&quot;: &quot;Bearer token&quot;&#10;}">{"Content-Type": "application/json"}</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="advRequestData">Тело запроса (для POST, PUT):</label>
+                        <textarea id="advRequestData" placeholder="{}">{}</textarea>
+                    </div>
+                    
+                    <button id="advSendRequest">Отправить запрос</button>
+                </div>
+                
+                <div class="result">
+                    <h3>Результат запроса</h3>
+                    <div id="advRequestStatus"></div>
+                    <pre id="advResponseData">Результат запроса будет отображен здесь</pre>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="batch">
+            <div class="card">
+                <h2>Пакетные запросы API</h2>
+                <p>Отправка нескольких запросов последовательно</p>
+                
+                <div class="api-form">
+                    <div class="form-group">
+                        <label for="batchRequests">Запросы (один запрос на строку в формате: METHOD URL):</label>
+                        <textarea id="batchRequests" placeholder="GET http://89.35.130.223:25063/jobs&#10;GET http://89.35.130.223:25063/companies">GET http://89.35.130.223:25063/jobs
+GET http://89.35.130.223:25063/companies</textarea>
+                    </div>
+                    
+                    <button id="batchSendRequest">Отправить пакетные запросы</button>
+                </div>
+                
+                <div class="result">
+                    <h3>Результаты пакетных запросов</h3>
+                    <div id="batchResults"></div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>SearhJob API тестер &copy; 2025</p>
+            <p><a href="../index.html">Вернуться на главную</a></p>
+        </footer>
+    </div>
+    
+    <script>
+        // Функции для работы с вкладками
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+        
+        // Получение прокси URL в зависимости от выбранного сервиса
+        function getProxyUrl(targetUrl) {
+            const proxyService = document.getElementById('proxyService').value;
+            
+            switch (proxyService) {
+                case 'corsproxy':
+                    return `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+                case 'allorigins':
+                    return `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+                case 'corsanywhere':
+                    return `https://cors-anywhere.herokuapp.com/${targetUrl}`;
+                case 'direct':
+                default:
+                    return targetUrl;
+            }
+        }
+        
+        // Обработка ответа от прокси-сервиса
+        function processProxyResponse(response, proxyService) {
+            if (proxyService === 'allorigins') {
+                return JSON.parse(response).contents;
+            }
+            return response;
+        }
+        
+        // Функция отправки простого запроса
+        document.getElementById('sendRequest').addEventListener('click', async () => {
+            const url = document.getElementById('apiUrl').value;
+            const method = document.getElementById('method').value;
+            const requestData = document.getElementById('requestData').value;
+            const proxyService = document.getElementById('proxyService').value;
+            
+            const statusDiv = document.getElementById('requestStatus');
+            const responseDiv = document.getElementById('responseData');
+            
+            statusDiv.innerHTML = '<span class="status-indicator status-warning"></span> Отправка запроса...';
+            responseDiv.textContent = 'Ожидание ответа...';
+            
+            try {
+                const proxyUrl = getProxyUrl(url);
+                
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                };
+                
+                if (method !== 'GET' && method !== 'HEAD') {
+                    options.body = requestData;
+                }
+                
+                const response = await fetch(proxyUrl, options);
+                const responseClone = response.clone();
+                
+                let responseData;
+                try {
+                    responseData = await response.json();
+                    responseData = processProxyResponse(responseData, proxyService);
+                    
+                    if (typeof responseData === 'string') {
+                        try {
+                            responseData = JSON.parse(responseData);
+                        } catch (e) {
+                            // Если не удалось распарсить как JSON, оставляем как строку
+                        }
+                    }
+                    
+                    responseDiv.textContent = JSON.stringify(responseData, null, 2);
+                } catch (e) {
+                    const text = await responseClone.text();
+                    responseDiv.textContent = text;
+                }
+                
+                if (response.ok) {
+                    statusDiv.innerHTML = `<span class="status-indicator status-success"></span> Успешно! Статус: ${response.status} ${response.statusText}`;
+                } else {
+                    statusDiv.innerHTML = `<span class="status-indicator status-error"></span> Ошибка! Статус: ${response.status} ${response.statusText}`;
+                }
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<span class="status-indicator status-error"></span> Ошибка! ${error.message}`;
+                responseDiv.textContent = error.message;
+            }
+        });
+        
+        // Функция отправки расширенного запроса
+        document.getElementById('advSendRequest').addEventListener('click', async () => {
+            const url = document.getElementById('advApiUrl').value;
+            const method = document.getElementById('advMethod').value;
+            const headersStr = document.getElementById('advHeaders').value;
+            const requestData = document.getElementById('advRequestData').value;
+            const proxyService = document.getElementById('proxyService').value;
+            
+            const statusDiv = document.getElementById('advRequestStatus');
+            const responseDiv = document.getElementById('advResponseData');
+            
+            statusDiv.innerHTML = '<span class="status-indicator status-warning"></span> Отправка запроса...';
+            responseDiv.textContent = 'Ожидание ответа...';
+            
+            try {
+                const headers = JSON.parse(headersStr);
+                const proxyUrl = getProxyUrl(url);
+                
+                const options = {
+                    method: method,
+                    headers: headers
+                };
+                
+                if (method !== 'GET' && method !== 'HEAD') {
+                    options.body = requestData;
+                }
+                
+                const response = await fetch(proxyUrl, options);
+                const responseClone = response.clone();
+                
+                let responseData;
+                try {
+                    responseData = await response.json();
+                    responseData = processProxyResponse(responseData, proxyService);
+                    
+                    if (typeof responseData === 'string') {
+                        try {
+                            responseData = JSON.parse(responseData);
+                        } catch (e) {
+                            // Если не удалось распарсить как JSON, оставляем как строку
+                        }
+                    }
+                    
+                    responseDiv.textContent = JSON.stringify(responseData, null, 2);
+                } catch (e) {
+                    const text = await responseClone.text();
+                    responseDiv.textContent = text;
+                }
+                
+                if (response.ok) {
+                    statusDiv.innerHTML = `<span class="status-indicator status-success"></span> Успешно! Статус: ${response.status} ${response.statusText}`;
+                } else {
+                    statusDiv.innerHTML = `<span class="status-indicator status-error"></span> Ошибка! Статус: ${response.status} ${response.statusText}`;
+                }
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<span class="status-indicator status-error"></span> Ошибка! ${error.message}`;
+                responseDiv.textContent = error.message;
+            }
+        });
+        
+        // Функция отправки пакетных запросов
+        document.getElementById('batchSendRequest').addEventListener('click', async () => {
+            const batchRequestsText = document.getElementById('batchRequests').value;
+            const proxyService = document.getElementById('proxyService').value;
+            
+            const requestsArray = batchRequestsText.split('\n').filter(line => line.trim() !== '');
+            const resultsDiv = document.getElementById('batchResults');
+            
+            resultsDiv.innerHTML = '<p>Выполнение пакетных запросов...</p>';
+            
+            try {
+                let allResults = '';
+                
+                for (let i = 0; i < requestsArray.length; i++) {
+                    const requestLine = requestsArray[i].trim();
+                    const [method, url] = requestLine.split(' ');
+                    
+                    allResults += `<div class="result">
+                        <h4>Запрос ${i+1}: ${method} ${url}</h4>
+                        <div class="status">Выполнение запроса...</div>
+                    `;
+                    
+                    try {
+                        const proxyUrl = getProxyUrl(url);
+                        
+                        const options = {
+                            method: method,
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        };
+                        
+                        const response = await fetch(proxyUrl, options);
+                        const responseClone = response.clone();
+                        
+                        let responseData;
+                        try {
+                            responseData = await response.json();
+                            responseData = processProxyResponse(responseData, proxyService);
+                            
+                            if (typeof responseData === 'string') {
+                                try {
+                                    responseData = JSON.parse(responseData);
+                                } catch (e) {
+                                    // Если не удалось распарсить как JSON, оставляем как строку
+                                }
+                            }
+                            
+                            const formattedResponse = JSON.stringify(responseData, null, 2);
+                            
+                            allResults += `<div class="status"><span class="status-indicator status-success"></span> Успешно! Статус: ${response.status}</div>
+                                <pre>${formattedResponse}</pre>`;
+                            
+                        } catch (e) {
+                            const text = await responseClone.text();
+                            allResults += `<div class="status"><span class="status-indicator status-warning"></span> Ответ не является JSON</div>
+                                <pre>${text}</pre>`;
+                        }
+                        
+                    } catch (error) {
+                        allResults += `<div class="status"><span class="status-indicator status-error"></span> Ошибка! ${error.message}</div>`;
+                    }
+                    
+                    allResults += `</div>`;
+                }
+                
+                resultsDiv.innerHTML = allResults;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<p><span class="status-indicator status-error"></span> Ошибка при выполнении пакетных запросов: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

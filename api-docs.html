@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SearhJob API - Документация</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/docs.css">
+</head>
+<body>
+    <div class="container">
+        <h1>SearhJob API - Документация</h1>
+        
+        <div class="card">
+            <h2>Общая информация</h2>
+            <p>Базовый URL API: <code>http://89.35.130.223:25063</code></p>
+            <p>Все запросы к API возвращают данные в формате JSON. Для методов, требующих авторизацию, необходимо передавать токен через заголовок <code>Authorization: Bearer {token}</code>.</p>
+            <p>Для получения токена используйте эндпоинт <code>/api/v1/auth/login</code>.</p>
+        </div>
+        
+        <div class="card" id="endpoints">
+            <h2>Доступные эндпоинты</h2>
+            
+            <div class="endpoint">
+                <h3><span class="method get">GET</span> /api/v1/jobs</h3>
+                <p>Получение списка всех вакансий.</p>
+                <div class="collapsible">
+                    <div class="collapsible-header">Параметры запроса</div>
+                    <div class="collapsible-content">
+                        <table>
+                            <tr>
+                                <th>Параметр</th>
+                                <th>Тип</th>
+                                <th>Описание</th>
+                            </tr>
+                            <tr>
+                                <td>page</td>
+                                <td>integer</td>
+                                <td>Номер страницы (опционально, по умолчанию 1)</td>
+                            </tr>
+                            <tr>
+                                <td>limit</td>
+                                <td>integer</td>
+                                <td>Количество записей на странице (опционально, по умолчанию 10)</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="collapsible">
+                    <div class="collapsible-header">Пример ответа</div>
+                    <div class="collapsible-content">
+                        <pre>{
+  "data": [
+    {
+      "id": 1,
+      "title": "Frontend Developer",
+      "description": "We are looking for a Frontend Developer...",
+      "company_id": 1,
+      "company_name": "Tech Solutions",
+      "location": "Moscow",
+      "salary": "100000-150000",
+      "created_at": "2025-05-01 10:00:00"
+    },
+    {
+      "id": 2,
+      "title": "Backend Developer",
+      "description": "Experienced Backend Developer required...",
+      "company_id": 2,
+      "company_name": "Digital Minds",
+      "location": "Saint Petersburg",
+      "salary": "120000-170000",
+      "created_at": "2025-05-02 11:30:00"
+    }
+  ],
+  "meta": {
+    "total": 45,
+    "per_page": 10,
+    "current_page": 1,
+    "last_page": 5
+  }
+}</pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <h3><span class="method get">GET</span> /api/v1/jobs/{id}</h3>
+                <p>Получение информации о конкретной вакансии.</p>
+                <div class="collapsible">
+                    <div class="collapsible-header">Параметры запроса</div>
+                    <div class="collapsible-content">
+                        <table>
+                            <tr>
+                                <th>Параметр</th>
+                                <th>Тип</th>
+                                <th>Описание</th>
+                            </tr>
+                            <tr>
+                                <td>id</td>
+                                <td>integer</td>
+                                <td>Идентификатор вакансии</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="collapsible">
+                    <div class="collapsible-header">Пример ответа</div>
+                    <div class="collapsible-content">
+                        <pre>{
+  "data": {
+    "id": 1,
+    "title": "Frontend Developer",
+    "description": "We are looking for a Frontend Developer...",
+    "requirements": "- 3+ years experience with JavaScript\n- Strong knowledge of React\n- CSS and HTML skills",
+    "company_id": 1,
+    "company_name": "Tech Solutions",
+    "company_logo": "https://example.com/logos/techsolutions.png",
+    "location": "Moscow",
+    "salary": "100000-150000",
+    "contact_email": "hr@techsolutions.com",
+    "created_at": "2025-05-01 10:00:00"
+  }
+}</pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <h3><span class="method get">GET</span> /api/v1/companies</h3>
+                <p>Получение списка всех компаний.</p>
+                <div class="collapsible">
+                    <div class="collapsible-header">Параметры запроса</div>
+                    <div class="collapsible-content">
+                        <table>
+                            <tr>
+                                <th>Параметр</th>
+                                <th>Тип</th>
+                                <th>Описание</th>
+                            </tr>
+                            <tr>
+                                <td>page</td>
+                                <td>integer</td>
+                                <td>Номер страницы (опционально, по умолчанию 1)</td>
+                            </tr>
+                            <tr>
+                                <td>limit</td>
+                                <td>integer</td>
+                                <td>Количество записей на странице (опционально, по умолчанию 10)</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <h3><span class="method post">POST</span> /api/v1/auth/login</h3>
+                <p>Авторизация пользователя и получение токена.</p>
+                <div class="collapsible">
+                    <div class="collapsible-header">Тело запроса</div>
+                    <div class="collapsible-content">
+                        <pre>{
+  "email": "user@example.com",
+  "password": "password123"
+}</pre>
+                    </div>
+                </div>
+                <div class="collapsible">
+                    <div class="collapsible-header">Пример ответа</div>
+                    <div class="collapsible-content">
+                        <pre>{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "name": "John Doe",
+    "email": "user@example.com"
+  }
+}</pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <h3><span class="method get">GET</span> /api/v1/auth/user</h3>
+                <p>Получение информации о текущем пользователе.</p>
+                <p><span class="tag">Требуется авторизация</span></p>
+                <div class="collapsible">
+                    <div class="collapsible-header">Пример ответа</div>
+                    <div class="collapsible-content">
+                        <pre>{
+  "data": {
+    "id": 1,
+    "name": "John Doe",
+    "email": "user@example.com",
+    "created_at": "2025-04-15 08:30:00"
+  }
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Коды ошибок</h2>
+            <table>
+                <tr>
+                    <th>Код</th>
+                    <th>Описание</th>
+                </tr>
+                <tr>
+                    <td>400</td>
+                    <td>Некорректный запрос</td>
+                </tr>
+                <tr>
+                    <td>401</td>
+                    <td>Не авторизован</td>
+                </tr>
+                <tr>
+                    <td>403</td>
+                    <td>Доступ запрещен</td>
+                </tr>
+                <tr>
+                    <td>404</td>
+                    <td>Ресурс не найден</td>
+                </tr>
+                <tr>
+                    <td>500</td>
+                    <td>Внутренняя ошибка сервера</td>
+                </tr>
+            </table>
+        </div>
+        
+        <footer>
+            <p><a href="index.html">← Назад на главную</a></p>
+            <p>SearhJob API тестер &copy; 2025</p>
+        </footer>
+    </div>
+
+    <script>
+        // Скрипт для разворачивания/сворачивания блоков контента
+        document.addEventListener('DOMContentLoaded', function() {
+            const collapsibles = document.querySelectorAll('.collapsible-header');
+            
+            collapsibles.forEach(function(collapsible) {
+                collapsible.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    const content = this.nextElementSibling;
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

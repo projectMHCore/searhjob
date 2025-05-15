@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SearhJob - Тестовые инструменты</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .tool-card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .tool-card h3 {
+            color: #0056b3;
+            margin-top: 0;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: #0056b3;
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            background-color: #003d7a;
+        }
+        
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .new {
+            background-color: #28a745;
+            color: white;
+            font-size: 0.8em;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SearhJob - Тестовые инструменты</h1>
+        
+        <div class="warning">
+            <strong>Важно!</strong> Инструменты в этой директории предназначены только для тестирования и отладки.
+            Не используйте их в производственной среде.
+        </div>
+        
+        <div class="info">
+            <strong>Информация!</strong> Все API запросы будут направлены на удаленный сервер по адресу <code>http://89.35.130.223:25063</code>.
+            При возникновении проблем с CORS используйте встроенные прокси или одно из предложенных решений.
+        </div>
+        
+        <div class="card">
+            <h2>Инструменты тестирования API</h2>
+            
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <h3>Основные инструменты</h3>
+                    <p>Инструменты для диагностики и тестирования API с поддержкой CORS-прокси.</p>
+                    <a href="api-check.html" class="btn">Диагностика API</a>
+                    <a href="api-tester.html" class="btn">Тестер API</a>
+                    <a href="api-status.html" class="btn">Статус API</a>
+                </div>
+                
+                <div class="tool-card">
+                    <h3>Справка по API</h3>
+                    <p>Справочные материалы по API эндпоинтам и документация.</p>
+                    <a href="../api-docs.html" class="btn">API документация</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Тестовые эндпоинты API</h2>
+            
+            <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
+                <tr>
+                    <th style="text-align:left; padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">Метод</th>
+                    <th style="text-align:left; padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">Эндпоинт</th>
+                    <th style="text-align:left; padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">Описание</th>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">GET</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;"><code>/jobs</code></td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">Получение списка всех вакансий</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">GET</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;"><code>/jobs/{id}</code></td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">Получение информации о конкретной вакансии</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">GET</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;"><code>/jobs/search?q={query}</code></td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">Поиск вакансий по ключевому слову</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">GET</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;"><code>/companies</code></td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">Получение списка всех компаний</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">GET</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;"><code>/companies/{id}</code></td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">Получение информации о конкретной компании</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">POST</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;"><code>/auth/login</code></td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">Аутентификация пользователя</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">POST</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;"><code>/auth/logout</code></td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">Выход пользователя из системы</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">GET</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;"><code>/auth/user</code></td>
+                    <td style="padding: 8px; border-bottom: 1px solid #ddd;">Получение информации о текущем пользователе</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Решение проблем с CORS</h2>
+            <p>Если вы видите ошибку <code>Failed to fetch</code> или <code>CORS error</code>, используйте один из следующих методов:</p>
+            
+            <h3>Метод 1: Использование встроенного CORS-прокси</h3>
+            <p>Выберите один из доступных CORS-прокси в инструментах тестирования:</p>
+            <ul>
+                <li>CORS Proxy IO</li>
+                <li>All Origins</li>
+                <li>CORS Anywhere</li>
+            </ul>
+            
+            <h3>Метод 2: Расширения для браузера</h3>
+            <p>Установите одно из расширений для отключения CORS:</p>
+            <ul>
+                <li>Chrome: <a href="https://chrome.google.com/webstore/detail/cors-unblock/lfhmikememgdcahcdlaciloancbhjino" target="_blank">CORS Unblock</a></li>
+                <li>Firefox: <a href="https://addons.mozilla.org/en-US/firefox/addon/cors-everywhere/" target="_blank">CORS Everywhere</a></li>
+            </ul>
+            
+            <h3>Метод 3: Использование инструментов командной строки</h3>
+            <p>Используйте curl или Postman для тестирования API без CORS ограничений:</p>
+            <pre style="background-color: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto;">curl -X GET http://89.35.130.223:25063/jobs -H "Accept: application/json"</pre>
+        </div>
+        
+        <footer>
+            <p>SearhJob API Testing Tools &copy; 2025</p>
+            <p><a href="../index.html">Вернуться на главную</a></p>
+        </footer>
+    </div>
+</body>
+</html>

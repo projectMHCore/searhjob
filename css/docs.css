@@ -1,0 +1,114 @@
+/* Дополнительные стили для документации API */
+
+/* Стили эндпоинтов */
+.endpoint {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.endpoint h3 {
+    padding: 15px;
+    margin: 0;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.endpoint p {
+    padding: 0 15px;
+    margin: 15px 0;
+}
+
+/* Метки HTTP методов */
+.method {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-right: 8px;
+}
+
+.method.get {
+    background-color: #3498db;
+}
+
+.method.post {
+    background-color: #27ae60;
+}
+
+.method.put {
+    background-color: #f39c12;
+}
+
+.method.delete {
+    background-color: #e74c3c;
+}
+
+/* Теги */
+.tag {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    background-color: #e74c3c;
+    color: white;
+}
+
+/* Коллапсы */
+.collapsible {
+    margin: 1px 0;
+}
+
+.collapsible-header {
+    background-color: #f0f0f0;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-weight: bold;
+    position: relative;
+}
+
+.collapsible-header:hover {
+    background-color: #e0e0e0;
+}
+
+.collapsible-header:after {
+    content: '+';
+    position: absolute;
+    right: 15px;
+    font-size: 1.2rem;
+}
+
+.collapsible-header.active:after {
+    content: '-';
+}
+
+.collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    padding: 0 15px;
+}
+
+.collapsible-content pre, 
+.collapsible-content table {
+    margin: 15px 0;
+}
+
+/* Перегрузки для таблицы в доке */
+.endpoint table {
+    width: 100%;
+    margin: 0 0 15px;
+}
+
+.endpoint table th, 
+.endpoint table td {
+    padding: 6px;
+}
+
+.endpoint table tr:last-child td {
+    border-bottom: none;
+}

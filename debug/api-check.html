@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Диагностика соединения с API</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .diagnostic-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+        
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        .test-success {
+            background-color: #e8f5e9;
+            border-left: 5px solid #4CAF50;
+        }
+        
+        .test-error {
+            background-color: #ffebee;
+            border-left: 5px solid #F44336;
+        }
+        
+        .test-warning {
+            background-color: #fff8e1;
+            border-left: 5px solid #FFC107;
+        }
+        
+        .test-pending {
+            background-color: #e3f2fd;
+            border-left: 5px solid #2196F3;
+        }
+        
+        .test-details {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #0056b3;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            background-color: #003d7a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Диагностика соединения с API</h1>
+        
+        <div class="card">
+            <h2>Настройки API</h2>
+            <div class="diagnostic-section">
+                <div class="form-group">
+                    <label for="apiServer">Адрес API сервера:</label>
+                    <input type="text" id="apiServer" value="http://89.35.130.223:25063" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+                </div>
+                
+                <button id="runDiagnostics" class="btn">Запустить диагностику</button>
+                <button id="runCorsTest" class="btn">Проверить CORS</button>
+                <button id="runEndpointTest" class="btn">Проверить эндпоинты</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Результаты диагностики</h2>
+            <div id="diagnosticResults">
+                <div class="test-result test-pending">
+                    <h3>Ожидание запуска диагностики</h3>
+                    <p>Нажмите "Запустить диагностику" для проверки соединения с API</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Варианты решения проблем</h2>
+            <div id="solutionsSection">
+                <p>После выполнения диагностики здесь появятся рекомендации по решению обнаруженных проблем.</p>
+            </div>
+        </div>
+        
+        <footer>
+            <p>SearhJob API Диагностика &copy; 2025</p>
+            <p><a href="../index.html">Вернуться на главную</a></p>
+        </footer>
+    </div>
+    
+    <script>
+        // Получаем элементы
+        const apiServerInput = document.getElementById('apiServer');
+        const diagnosticResultsDiv = document.getElementById('diagnosticResults');
+        const solutionsDiv = document.getElementById('solutionsSection');
+        
+        // Кнопки
+        const runDiagnosticsBtn = document.getElementById('runDiagnostics');
+        const runCorsTestBtn = document.getElementById('runCorsTest');
+        const runEndpointTestBtn = document.getElementById('runEndpointTest');
+        
+        // Функция для проверки прямого доступа к API
+        async function checkDirectAccess(apiUrl) {
+            try {
+                const startTime = performance.now();
+                const response = await fetch(apiUrl, { 
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                const endTime = performance.now();
+                const responseTime = Math.round(endTime - startTime);
+                
+                return {
+                    success: response.ok,
+                    status: response.status,
+                    statusText: response.statusText,
+                    responseTime: responseTime,
+                    headers: Object.fromEntries([...response.headers]),
+                    cors: response.type === 'cors'
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message,
+                    cors: false
+                };
+            }
+        }
+        
+        // Функция для проверки доступа через прокси
+        async function checkProxyAccess(apiUrl) {
+            try {
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
+                const startTime = performance.now();
+                const response = await fetch(proxyUrl);
+                const endTime = performance.now();
+                const responseTime = Math.round(endTime - startTime);
+                
+                return {
+                    success: response.ok,
+                    status: response.status,
+                    statusText: response.statusText,
+                    responseTime: responseTime,
+                    proxy: true
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message,
+                    proxy: false
+                };
+            }
+        }
+        
+        // Функция для проверки CORS заголовков
+        function checkCorsHeaders(headers) {
+            const corsHeaders = {
+                'Access-Control-Allow-Origin': headers['access-control-allow-origin'],
+                'Access-Control-Allow-Methods': headers['access-control-allow-methods'],
+                'Access-Control-Allow-Headers': headers['access-control-allow-headers']
+            };
+            
+            const hasAllowOrigin = !!corsHeaders['Access-Control-Allow-Origin'];
+            
+            return {
+                headers: corsHeaders,
+                hasAllowOrigin: hasAllowOrigin,
+                allowsAllOrigins: corsHeaders['Access-Control-Allow-Origin'] === '*'
+            };
+        }
+        
+        // Проверка доступных эндпоинтов
+        async function checkEndpoints(baseUrl) {
+            const endpoints = [
+                { name: 'Корневой эндпоинт', path: '/' },
+                { name: 'Получение вакансий', path: '/jobs' },
+                { name: 'Получение компаний', path: '/companies' }
+            ];
+            
+            const results = [];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const url = `${baseUrl}${endpoint.path}`;
+                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                    
+                    const response = await fetch(proxyUrl);
+                    results.push({
+                        name: endpoint.name,
+                        path: endpoint.path,
+                        status: response.status,
+                        success: response.ok
+                    });
+                } catch (error) {
+                    results.push({
+                        name: endpoint.name,
+                        path: endpoint.path,
+                        error: error.message,
+                        success: false
+                    });
+                }
+            }
+            
+            return results;
+        }
+        
+        // Функция запуска полной диагностики
+        async function runFullDiagnostics() {
+            const apiUrl = apiServerInput.value.trim();
+            
+            diagnosticResultsDiv.innerHTML = `
+                <div class="test-result test-pending">
+                    <h3>Выполнение диагностики...</h3>
+                    <p>Проверка соединения с ${apiUrl}. Пожалуйста, подождите...</p>
+                </div>
+            `;
+            
+            let htmlResult = '';
+            
+            // Шаг 1: Проверка прямого доступа
+            htmlResult += '<div class="test-result test-pending"><h3>1. Проверка прямого соединения</h3>';
+            const directResult = await checkDirectAccess(apiUrl);
+            
+            if (directResult.success) {
+                htmlResult = htmlResult.replace('test-pending', 'test-success');
+                htmlResult += `<p>✅ Прямое соединение установлено успешно!</p>`;
+                htmlResult += `<p>Время ответа: ${directResult.responseTime} мс</p>`;
+                htmlResult += `<p>Статус: ${directResult.status} ${directResult.statusText}</p>`;
+                
+                const corsInfo = checkCorsHeaders(directResult.headers);
+                if (corsInfo.hasAllowOrigin) {
+                    htmlResult += `<p>✅ CORS настроен правильно</p>`;
+                } else {
+                    htmlResult += `<p>⚠️ CORS не настроен</p>`;
+                }
+                
+                htmlResult += `<div class="test-details">Заголовки ответа:\n${JSON.stringify(directResult.headers, null, 2)}</div>`;
+            } else {
+                htmlResult = htmlResult.replace('test-pending', 'test-error');
+                htmlResult += `<p>❌ Не удалось установить прямое соединение</p>`;
+                htmlResult += `<p>Ошибка: ${directResult.error}</p>`;
+                
+                if (directResult.error.includes('CORS')) {
+                    htmlResult += `<p>⚠️ Обнаружена ошибка CORS. API сервер не разрешает кросс-доменные запросы.</p>`;
+                }
+            }
+            htmlResult += '</div>';
+            
+            // Шаг 2: Проверка доступа через прокси
+            htmlResult += '<div class="test-result test-pending"><h3>2. Проверка через CORS-прокси</h3>';
+            const proxyResult = await checkProxyAccess(apiUrl);
+            
+            if (proxyResult.success) {
+                htmlResult = htmlResult.replace('test-pending', 'test-success');
+                htmlResult += `<p>✅ Соединение через CORS-прокси установлено успешно!</p>`;
+                htmlResult += `<p>Время ответа: ${proxyResult.responseTime} мс</p>`;
+                htmlResult += `<p>Статус: ${proxyResult.status} ${proxyResult.statusText}</p>`;
+            } else {
+                htmlResult = htmlResult.replace('test-pending', 'test-error');
+                htmlResult += `<p>❌ Не удалось установить соединение через CORS-прокси</p>`;
+                htmlResult += `<p>Ошибка: ${proxyResult.error}</p>`;
+            }
+            htmlResult += '</div>';
+            
+            // Шаг 3: Проверка доступности эндпоинтов
+            htmlResult += '<div class="test-result test-pending"><h3>3. Проверка доступности эндпоинтов</h3>';
+            const endpointsResult = await checkEndpoints(apiUrl);
+            
+            let successCount = 0;
+            endpointsResult.forEach(endpoint => {
+                if (endpoint.success) successCount++;
+            });
+            
+            if (successCount === endpointsResult.length) {
+                htmlResult = htmlResult.replace('test-pending', 'test-success');
+                htmlResult += `<p>✅ Все эндпоинты доступны!</p>`;
+            } else if (successCount > 0) {
+                htmlResult = htmlResult.replace('test-pending', 'test-warning');
+                htmlResult += `<p>⚠️ Некоторые эндпоинты недоступны (${successCount}/${endpointsResult.length})</p>`;
+            } else {
+                htmlResult = htmlResult.replace('test-pending', 'test-error');
+                htmlResult += `<p>❌ Все эндпоинты недоступны</p>`;
+            }
+            
+            htmlResult += '<div class="test-details">';
+            endpointsResult.forEach(endpoint => {
+                if (endpoint.success) {
+                    htmlResult += `✅ ${endpoint.name} (${endpoint.path}): Статус ${endpoint.status}\n`;
+                } else {
+                    htmlResult += `❌ ${endpoint.name} (${endpoint.path}): ${endpoint.error || 'Недоступен'}\n`;
+                }
+            });
+            htmlResult += '</div></div>';
+            
+            // Итог диагностики
+            htmlResult += '<div class="test-result ';
+            if (directResult.success || proxyResult.success) {
+                htmlResult += 'test-success"><h3>Итоги диагностики</h3>';
+                if (directResult.success && !directResult.error) {
+                    htmlResult += `<p>✅ API доступен напрямую без CORS ограничений.</p>`;
+                } else if (proxyResult.success) {
+                    htmlResult += `<p>✅ API доступен через CORS-прокси.</p>`;
+                }
+            } else {
+                htmlResult += 'test-error"><h3>Итоги диагностики</h3>';
+                htmlResult += `<p>❌ API недоступен ни напрямую, ни через прокси.</p>`;
+            }
+            htmlResult += '</div>';
+            
+            diagnosticResultsDiv.innerHTML = htmlResult;
+            
+            // Генерируем рекомендации
+            generateSolutions(directResult, proxyResult, endpointsResult);
+        }
+        
+        // Функция для генерации рекомендаций
+        function generateSolutions(directResult, proxyResult, endpointsResult) {
+            let solutionsHtml = '';
+            
+            if (!directResult.success && directResult.error.includes('CORS')) {
+                solutionsHtml += `
+                    <h3>Решение проблем с CORS</h3>
+                    <ol>
+                        <li>
+                            <strong>Использование CORS-прокси:</strong><br>
+                            Для обхода ограничений CORS можно использовать публичные CORS-прокси:
+                            <ul>
+                                <li>CORS Proxy IO: <code>https://corsproxy.io/?${encodeURIComponent(apiServerInput.value)}</code></li>
+                                <li>All Origins: <code>https://api.allorigins.win/get?url=${encodeURIComponent(apiServerInput.value)}</code></li>
+                            </ul>
+                        </li>
+                        <li>
+                            <strong>Настройка сервера API:</strong><br>
+                            Если у вас есть доступ к серверу API, настройте заголовки CORS:
+                            <pre>Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE
+Access-Control-Allow-Headers: Content-Type, Authorization</pre>
+                        </li>
+                        <li>
+                            <strong>Использование расширения браузера:</strong><br>
+                            Установите расширение для отключения проверок CORS в браузере (например, CORS Unblock для Chrome)
+                        </li>
+                    </ol>
+                `;
+            }
+            
+            if (!directResult.success && !proxyResult.success) {
+                solutionsHtml += `
+                    <h3>Решение проблем с доступностью API</h3>
+                    <ol>
+                        <li>
+                            <strong>Проверьте адрес API:</strong><br>
+                            Убедитесь, что адрес API введен правильно: <code>${apiServerInput.value}</code>
+                        </li>
+                        <li>
+                            <strong>Проверьте, работает ли сервер:</strong><br>
+                            Возможно, сервер API временно недоступен или имеет проблемы
+                        </li>
+                        <li>
+                            <strong>Проверьте сетевое соединение:</strong><br>
+                            Убедитесь, что ваше интернет-соединение работает стабильно
+                        </li>
+                        <li>
+                            <strong>Обратитесь к серверному логу:</strong><br>
+                            Если у вас есть доступ к серверу, проверьте логи на наличие ошибок
+                        </li>
+                    </ol>
+                `;
+            }
+            
+            if (proxyResult.success && !directResult.success) {
+                solutionsHtml += `
+                    <h3>Рекомендуемые действия</h3>
+                    <p>API доступен через прокси, но не напрямую из браузера. Рекомендуется:</p>
+                    <ol>
+                        <li>
+                            <strong>Использовать CORS-прокси для запросов:</strong><br>
+                            <a href="api-tester.html" class="btn">Открыть тестер с прокси</a>
+                        </li>
+                        <li>
+                            <strong>Создать серверный прокси:</strong><br>
+                            Реализуйте собственный серверный прокси на PHP или Node.js, который будет перенаправлять запросы к API
+                        </li>
+                    </ol>
+                `;
+            }
+            
+            if (directResult.success) {
+                solutionsHtml += `
+                    <h3>Рекомендуемые действия</h3>
+                    <p>API доступен напрямую без ограничений CORS. Вы можете:</p>
+                    <ol>
+                        <li>
+                            <strong>Использовать прямые запросы к API:</strong><br>
+                            <a href="api-tester.html" class="btn">Открыть тестер API</a>
+                        </li>
+                    </ol>
+                `;
+            }
+            
+            if (solutionsHtml === '') {
+                solutionsHtml = '<p>Нет доступных рекомендаций. Пожалуйста, выполните диагностику.</p>';
+            }
+            
+            solutionsDiv.innerHTML = solutionsHtml;
+        }
+        
+        // Функция для проверки только CORS
+        async function testCorsOnly() {
+            const apiUrl = apiServerInput.value.trim();
+            
+            diagnosticResultsDiv.innerHTML = `
+                <div class="test-result test-pending">
+                    <h3>Проверка CORS настроек</h3>
+                    <p>Проверка CORS для ${apiUrl}. Пожалуйста, подождите...</p>
+                </div>
+            `;
+            
+            try {
+                // Проверка OPTIONS запросом (preflight)
+                const preflightResult = await fetch(apiUrl, {
+                    method: 'OPTIONS',
+                    mode: 'cors',
+                    headers: {
+                        'Access-Control-Request-Method': 'GET',
+                        'Access-Control-Request-Headers': 'Content-Type, Authorization',
+                        'Origin': window.location.origin
+                    }
+                }).catch(error => {
+                    return { error: error.message, ok: false };
+                });
+                
+                // Проверка обычным запросом
+                const getResult = await fetch(apiUrl, { 
+                    mode: 'cors',
+                    headers: { 
+                        'Accept': 'application/json'
+                    }
+                }).catch(error => {
+                    return { error: error.message, ok: false };
+                });
+                
+                let htmlResult = '';
+                
+                if (preflightResult.ok || getResult.ok) {
+                    htmlResult = `
+                        <div class="test-result test-success">
+                            <h3>CORS настройки</h3>
+                            <p>✅ CORS настроен правильно или разрешен для этого источника</p>
+                    `;
+                    
+                    if (preflightResult.ok) {
+                        const headers = Object.fromEntries([...preflightResult.headers]);
+                        htmlResult += `
+                            <p>✅ Preflight запрос (OPTIONS) успешен</p>
+                            <div class="test-details">Заголовки ответа preflight:\n${JSON.stringify(headers, null, 2)}</div>
+                        `;
+                    } else {
+                        htmlResult += `<p>❌ Preflight запрос (OPTIONS) не прошел: ${preflightResult.error || preflightResult.status}</p>`;
+                    }
+                    
+                    if (getResult.ok) {
+                        const headers = Object.fromEntries([...getResult.headers]);
+                        htmlResult += `
+                            <p>✅ GET запрос успешен</p>
+                            <div class="test-details">Заголовки ответа GET:\n${JSON.stringify(headers, null, 2)}</div>
+                        `;
+                    } else {
+                        htmlResult += `<p>❌ GET запрос не прошел: ${getResult.error || getResult.status}</p>`;
+                    }
+                    
+                    htmlResult += `</div>`;
+                } else {
+                    htmlResult = `
+                        <div class="test-result test-error">
+                            <h3>CORS настройки</h3>
+                            <p>❌ CORS не настроен или не разрешен для этого источника</p>
+                            <p>Ошибка preflight: ${preflightResult.error || preflightResult.status}</p>
+                            <p>Ошибка GET: ${getResult.error || getResult.status}</p>
+                            
+                            <h4>Рекомендуемые решения:</h4>
+                            <ol>
+                                <li>Используйте CORS прокси для запросов к API</li>
+                                <li>Если у вас есть доступ к серверу API, настройте CORS заголовки</li>
+                                <li>Используйте расширение браузера для отключения CORS (только для разработки)</li>
+                            </ol>
+                        </div>
+                    `;
+                }
+                
+                // Проверка прокси
+                htmlResult += `
+                    <div class="test-result test-pending">
+                        <h3>Проверка через CORS прокси</h3>
+                        <p>Проверка доступности через прокси...</p>
+                    </div>
+                `;
+                
+                diagnosticResultsDiv.innerHTML = htmlResult;
+                
+                // Проверка через прокси
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
+                const proxyResult = await fetch(proxyUrl).catch(error => {
+                    return { error: error.message, ok: false };
+                });
+                
+                const proxyTest = diagnosticResultsDiv.querySelector('.test-result:last-child');
+                
+                if (proxyResult.ok) {
+                    proxyTest.classList.replace('test-pending', 'test-success');
+                    proxyTest.innerHTML = `
+                        <h3>Проверка через CORS прокси</h3>
+                        <p>✅ API доступен через CORS прокси</p>
+                        <p>Статус: ${proxyResult.status} ${proxyResult.statusText || ''}</p>
+                        <p>URL прокси: ${proxyUrl}</p>
+                    `;
+                } else {
+                    proxyTest.classList.replace('test-pending', 'test-error');
+                    proxyTest.innerHTML = `
+                        <h3>Проверка через CORS прокси</h3>
+                        <p>❌ API недоступен даже через CORS прокси</p>
+                        <p>Ошибка: ${proxyResult.error || proxyResult.status}</p>
+                    `;
+                }
+                
+                // Генерация рекомендаций
+                let solutions = '';
+                
+                if (!preflightResult.ok && !getResult.ok && proxyResult.ok) {
+                    solutions = `
+                        <h3>Рекомендации по обходу CORS</h3>
+                        <p>API доступен только через прокси. Для работы с API рекомендуется:</p>
+                        <ol>
+                            <li>
+                                <strong>Использовать CORS прокси для всех запросов:</strong>
+                                <ul>
+                                    <li>CORS Proxy IO: <code>https://corsproxy.io/?${encodeURIComponent(apiUrl)}</code></li>
+                                    <li>All Origins: <code>https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}</code></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <strong>Создать собственный серверный прокси:</strong><br>
+                                Реализуйте PHP или Node.js прокси, который будет перенаправлять запросы к API и добавлять CORS заголовки
+                            </li>
+                        </ol>
+                    `;
+                } else if (preflightResult.ok || getResult.ok) {
+                    solutions = `
+                        <h3>CORS настроен правильно</h3>
+                        <p>API доступен напрямую без использования прокси. Вы можете отправлять запросы напрямую с этого домена.</p>
+                    `;
+                } else {
+                    solutions = `
+                        <h3>API недоступен</h3>
+                        <p>API недоступен ни напрямую, ни через прокси. Возможные причины:</p>
+                        <ol>
+                            <li>Неверный адрес API сервера</li>
+                            <li>API сервер не работает или имеет проблемы</li>
+                            <li>Проблемы с вашим интернет-соединением</li>
+                            <li>Блокировка запросов на уровне сети</li>
+                        </ol>
+                    `;
+                }
+                
+                solutionsDiv.innerHTML = solutions;
+                
+            } catch (error) {
+                diagnosticResultsDiv.innerHTML = `
+                    <div class="test-result test-error">
+                        <h3>Ошибка при проверке CORS</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Проверка доступности эндпоинтов
+        async function testEndpoints() {
+            const apiUrl = apiServerInput.value.trim();
+            
+            diagnosticResultsDiv.innerHTML = `
+                <div class="test-result test-pending">
+                    <h3>Проверка доступности эндпоинтов</h3>
+                    <p>Проверка эндпоинтов для ${apiUrl}. Пожалуйста, подождите...</p>
+                </div>
+            `;
+            
+            const endpoints = [
+                { name: 'Корневой эндпоинт', path: '/' },
+                { name: 'Получение вакансий', path: '/jobs' },
+                { name: 'Получение компаний', path: '/companies' },
+                { name: 'Поиск вакансий', path: '/jobs/search?q=developer' },
+                { name: 'Вакансия по ID', path: '/jobs/1' },
+                { name: 'Компания по ID', path: '/companies/1' },
+                { name: 'Аутентификация', path: '/auth/login', method: 'POST' }
+            ];
+            
+            let htmlResult = `
+                <div class="test-result">
+                    <h3>Результаты проверки эндпоинтов</h3>
+                    <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
+                        <tr>
+                            <th style="text-align:left; padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">Эндпоинт</th>
+                            <th style="text-align:left; padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">Статус</th>
+                            <th style="text-align:left; padding: 8px; border-bottom: 1px solid #ddd; background-color: #f2f2f2;">Результат</th>
+                        </tr>
+            `;
+            
+            let successCount = 0;
+            
+            for (const endpoint of endpoints) {
+                const url = `${apiUrl}${endpoint.path}`;
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                
+                try {
+                    const method = endpoint.method || 'GET';
+                    const options = { method };
+                    
+                    if (method === 'POST') {
+                        options.headers = { 'Content-Type': 'application/json' };
+                        options.body = JSON.stringify({
+                            email: 'test@example.com',
+                            password: 'password123'
+                        });
+                    }
+                    
+                    const response = await fetch(proxyUrl, options);
+                    
+                    if (response.ok) {
+                        successCount++;
+                        htmlResult += `
+                            <tr>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${endpoint.name} (${endpoint.path})</td>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${response.status} ${response.statusText}</td>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd; color: green;">✅ Доступен</td>
+                            </tr>
+                        `;
+                    } else {
+                        htmlResult += `
+                            <tr>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${endpoint.name} (${endpoint.path})</td>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${response.status} ${response.statusText}</td>
+                                <td style="padding: 8px; border-bottom: 1px solid #ddd; color: orange;">⚠️ Ошибка</td>
+                            </tr>
+                        `;
+                    }
+                } catch (error) {
+                    htmlResult += `
+                        <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${endpoint.name} (${endpoint.path})</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">Ошибка</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd; color: red;">❌ ${error.message}</td>
+                        </tr>
+                    `;
+                }
+            }
+            
+            const successRate = Math.round((successCount / endpoints.length) * 100);
+            
+            // Определяем класс для результата на основе процента успешных запросов
+            let resultClass = 'test-error';
+            if (successRate >= 70) resultClass = 'test-success';
+            else if (successRate > 0) resultClass = 'test-warning';
+            
+            htmlResult = htmlResult.replace('test-result', `test-result ${resultClass}`);
+            
+            htmlResult += `
+                    </table>
+                    <p style="margin-top: 15px;">Доступно ${successCount} из ${endpoints.length} эндпоинтов (${successRate}%)</p>
+                </div>
+            `;
+            
+            diagnosticResultsDiv.innerHTML = htmlResult;
+            
+            // Генерируем рекомендации
+            let solutions = '';
+            
+            if (successRate === 100) {
+                solutions = `
+                    <h3>Все эндпоинты доступны</h3>
+                    <p>API полностью функционирует. Вы можете использовать все эндпоинты.</p>
+                `;
+            } else if (successRate > 0) {
+                solutions = `
+                    <h3>Некоторые эндпоинты недоступны</h3>
+                    <p>Часть API функционирует правильно, но некоторые эндпоинты недоступны. Возможные причины:</p>
+                    <ul>
+                        <li>Некоторые эндпоинты требуют авторизации</li>
+                        <li>Некоторые функции API временно отключены</li>
+                        <li>Некорректные параметры запроса</li>
+                    </ul>
+                `;
+            } else {
+                solutions = `
+                    <h3>Все эндпоинты недоступны</h3>
+                    <p>API полностью недоступен. Возможные причины:</p>
+                    <ul>
+                        <li>Сервер API не работает</li>
+                        <li>Неверный базовый URL API</li>
+                        <li>Проблемы с сетевым соединением</li>
+                    </ul>
+                    <p>Рекомендуется проверить адрес API и состояние сервера.</p>
+                `;
+            }
+            
+            solutionsDiv.innerHTML = solutions;
+        }
+        
+        // Обработчики кнопок
+        runDiagnosticsBtn.addEventListener('click', runFullDiagnostics);
+        runCorsTestBtn.addEventListener('click', testCorsOnly);
+        runEndpointTestBtn.addEventListener('click', testEndpoints);
+    </script>
+</body>
+</html>
